@@ -52,7 +52,6 @@ int main(){
   setlocale(LC_ALL, "");
   clock_t begin, end;  double time_spent;
   begin = clock();
-
   read_limit();
   struct Board board(r, c, lim_row, lim_col);
   board.do_heuristic();  //pre process

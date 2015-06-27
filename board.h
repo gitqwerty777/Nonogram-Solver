@@ -11,7 +11,7 @@ struct Limit{
   }
   void set_pos(int a, int b){
     fs = a; ls = b;
-    fe = a + l -1; le = ls + l -1;
+    fe = fs + l -1; le = ls + l -1;
   }
 };
 
