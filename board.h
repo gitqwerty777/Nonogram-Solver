@@ -4,25 +4,26 @@
 using namespace std;
 
 struct Limit{
-  int l;
-  int fs, ls, fe, le;
   Limit(int ll){
     l = ll;
   }
   void set_pos(int a, int b){
     fs = a; ls = b;
-    fe = a + l -1; le = ls + l -1;
   }
+  int l;
+  int fs, ls;
 };
 
 struct Point{
-  int r, c;
   Point(int rr, int cc){
     r = rr; c = cc;
   }
+  int r, c;
+  
 };
 
-enum LINE{ROW, COL};
+
+enum line_type{row, col};
 
 struct Board{
   Board(int rr, int cc, vector< vector<struct Limit> >& lr, vector< vector<struct Limit> >& lc){
@@ -53,8 +54,6 @@ struct Board{
   bool pre_process();
   void fill_row(int i);
   void fill_col(int i);
-  int  is_full_filled_col(int);
-  int  is_full_filled_row(int);
   bool update_row(struct Point p, int v);//fill a new block, find other block can be updated or not
   bool update_col(struct Point p, int v);
   bool update_limit_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
@@ -66,25 +65,20 @@ struct Board{
   void update_lim_col(int, int,int,int);
   void update_lim_row(int, int,int,int);
   void update_line_col(int);
-  void fillknown_row(int);
+  void update_line_row(int);
   //board
-  void set_grid(int r, int c, int v);
+  void set(int r, int c, int v);
   void print_board(const char[]);
   void fill_blank_row(int);
   void fill_blank_col(int);
 
   //heuristic
-  void do_heuristic();
-  
   void update_h();
-  void check_solve(LINE, int line);
-  bool guess(LINE, int);
+  void check_solve(line_type type, int line);
+  bool guess(int, int);
   bool heuristic();
 
   bool check_all_solved();
-
-  //dfs
-  void dfs();
 };
 
 
