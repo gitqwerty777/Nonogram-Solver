@@ -23,28 +23,22 @@ void no_solution(char in[]){
 }
 
 void Board::fill_blank_col(int nowc){
-  int size = lim_col[nowc].size();
-  for(int i = 0; i < lim_col[nowc][0].fs; i++)
-    fillGrid(i, nowc, WHITE);
-  for(int i = 0; i < size-1; i++){
-    for(int j = lim_col[nowc][i].ls + lim_col[nowc][i].l; j < lim_col[nowc][i+1].fs; j++)
-      fillGrid(j,nowc, WHITE);
-  }
-  for(int i = lim_col[nowc][size-1].ls+lim_col[nowc][size-1].l; i < c; i++)
-    fillGrid(i, nowc, WHITE);
-  
-  int nowb = 0;
-  int minl = lim_col[nowc][0].l;
+  refill_col(nowc);
+  int minl = 0;//min limit length
   for(int i = 1; i < lim_col[nowc].size(); i++)
-    if(minl > lim_col[nowc][i].l)
+    if(!lim_col[nowc][i].isSolved() && minl > lim_col[nowc][i].l)
       minl = lim_col[nowc][i].l;
-  for(int i = 0;i < r; i++)
+  if (minl == 0){
+    return;
+  }
+  int nowb = 0;
+  for(int i = 0;i < r; i++)//if possible empty grid sequence less than min limit, fill all to white
     if(b[i][nowc] != WHITE){
       nowb++;
       if(i == r-1){//last
 	if(nowb < minl)
-	for(int j = 0; j < nowb; j++)
-	  fillGrid(i-j, nowc, WHITE);
+	  for(int j = 0; j < nowb; j++)
+	    fillGrid(i-j, nowc, WHITE);
       }
     } else{
       if(nowb < minl){
@@ -56,20 +50,17 @@ void Board::fill_blank_col(int nowc){
 }
 
 void Board::fill_blank_row(int nowr){
-  int size = lim_row[nowr].size();
-  for(int i = 0; i < size-1; i++){
-    for(int j = lim_row[nowr][i].ls + lim_row[nowr][i].l; j < lim_row[nowr][i+1].fs; j++)
-      fillGrid(nowr, j, WHITE);
+  refill_row(nowr);
+
+  int minl = 0;
+  for(int i = 1; i < lim_row[nowr].size(); i++)
+    if(!lim_row[nowr][i].isSolved() && minl > lim_row[nowr][i].l)
+      minl = lim_row[nowr][i].l;
+  if(minl == 0){
+    return;
   }
-  for(int i = lim_row[nowr][size-1].ls+lim_row[nowr][size-1].l; i < c; i++)
-    fillGrid(nowr, i, WHITE);
 
   int nowb = 0;
-  int minl = lim_row[nowr][0].l;
-  for(int i = 1; i < lim_row[nowr].size(); i++)
-    if(minl > lim_row[nowr][i].l)
-    minl = lim_row[nowr][i].l;
-
   for(int i = 0;i < c; i++){
     if(b[nowr][i] != WHITE){
       nowb++;
@@ -277,14 +268,14 @@ bool Board::heuristic(){ //TODO: change to line_type
 bool Board::updateHeuristic(int type, int line){//if there are no any hint can solve it
   int setnum = alreadySetGridNumber;
   if(type == 1){//row
-    printf("guess %d row\n", line);
+    printf("updateHeuristic: row%d\n", line);
     refill_row(line);
     for(int j = 0; j < c; j++)
       if(b[line][j] != SPACE)
 	updateLimit_row(Point(line,j), b[line][j]);
     fill_blank_row(line);
   } else {
-    printf("guess %d col\n", line);
+    printf("updateHeuristic: col%d\n", line);    
     refill_col(line);
     for(int j = 0; j < r; j++)
       if(b[j][line] != SPACE)
@@ -328,7 +319,9 @@ void Board::refill_col(int c){
     fillGrid(i, c, WHITE);
 }
 
-void Board::update_lim_col(int c, int limiti,int fs,int ls){
+//not used -- update-lim_col
+/*
+  void Board::update_lim_col(int c, int limiti,int fs,int ls){
   lim_col[c][limiti].fs = fs;
   lim_col[c][limiti].ls = ls;
   int li = limiti-1;
@@ -340,7 +333,9 @@ void Board::update_lim_col(int c, int limiti,int fs,int ls){
   if(li < lim_col[c].size()){
     lim_col[c][li].fs = max(lim_col[c][li].fs, lim_col[c][li].fs - 1 - lim_col[c][li-1].l);
     lim_col[c][li].ls = min(lim_col[c][li].ls, lim_col[c][li-1].ls +1 + lim_col[c][li-1].l);
-  }/*
+  }
+*/
+  /*
   while(li >= 0){
     lim_col[c][li].fs = max(lim_col[c][li].fs, lim_col[c][li+1].fs - 1 - lim_col[c][li].l);
     li--;
@@ -350,11 +345,13 @@ void Board::update_lim_col(int c, int limiti,int fs,int ls){
     lim_col[c][li].ls = min(lim_col[c][li].ls, lim_col[c][li-1].ls +1 + lim_col[c][li-1].l);
     li++;
     }*/
-}
+//}
 
 bool Board::updateLimitByGrid_col(int linei, int limiti, int i){//update fs, ls to get correct ans
   int fs = lim_col[linei][limiti].fs;
   int ls = lim_col[linei][limiti].ls;
+  int fe = lim_col[linei][limiti].fe;
+  int le = lim_col[linei][limiti].le;
   int l = lim_col[linei][limiti].l;
   int v = b[i][linei];
   if(v == BLACK){
@@ -363,10 +360,10 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int i){//update fs, ls 
   } else {
     while(fs <= ls){
       bool update = false;
-      if(fs <= i && fs + l-1 >= i){
-	fs++; update = true;}
-      if(ls <= i && ls + l-1 >= i){
-	ls--; update = true;}
+      if(fs <= i && fe >= i){
+	fs++; fe++; update = true;}
+      if(ls <= i && le >= i){
+	ls--; le--; update = true;}
       if(!update)
 	break;
     }
@@ -384,8 +381,7 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int i){//update fs, ls 
         printf("update lim_col[%d][%d]: (%d, %d) \n", linei, limiti+1,   lim_col[linei][limiti+1].fs,   lim_col[linei][limiti+1].ls);
     //    update_lim_col(linei, limiti, fs, ls);
     }
-  lim_col[linei][limiti].fs = fs;
-  lim_col[linei][limiti].ls = ls;
+  lim_col[linei][limiti].set_pos(fs, ls);
   if(fs == ls){
     refill_col(linei);
     for(int i = 0; i < lim_col[linei][limiti].l; i++)
@@ -474,10 +470,10 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){//copy
   } else {
     while(fs <= ls){//white in the possible answer
       bool update = false;
-      if(fs <= i && fs+l-1 >= i){
+      if(fs <= i && fe >= i){
 	fs++; fe++; update = true;}
-      if(ls <= i && ls+l-1 >= i){
-	ls--; le++; update = true;}
+      if(ls <= i && le >= i){
+	ls--; le--; update = true;}
       if(!update)
 	break;
     }
@@ -495,9 +491,7 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){//copy
     if(limiti-1)
     printf("lim_row[%d][%d] fs = %d ls = %d\n", linei, limiti-1, lim_row[linei][limiti-1].fs, lim_row[linei][limiti-1].ls);
     }
-  //lim_row[linei][limiti].set_pos(fs,ls);
-  lim_row[linei][limiti].fs = fs;
-  lim_row[linei][limiti].ls = ls;
+  lim_row[linei][limiti].set_pos(fs,ls);
   if(fs == ls){
     refill_row(linei);
     for(int i = 0; i < lim_row[linei][limiti].l; i++)
@@ -538,40 +532,17 @@ bool Board::updateLimit_row(struct Point p, int v){//copy
       if(in_limit_row(p.r, j, p.c))
 	updateLimitByGrid_row(p.r, j, p.c);
   }
-  //先檢查已填的格子可能是哪些constrant的部分，並用le, fe等選擇fr -> relimit(after fill)
+  //檢查已填的格子可能是哪些limit的一部分，用le, fe等選擇fr -> relimit(after fill)
   int limiti = -1;
   for(int j = 0; j < lim_row[p.r].size(); j++)
     if(only_in_one_limit_row(p.r, p.c, j)){
 	  limiti = j; break;
     }
-
-    /*if(in_limit_row(p.r, j, p.c))//only possible at [j]
-      if(j == lim_row[p.r].size()-1){
-	if( j == 0 || !in_limit_row(p.r, j-1, p.c)){
-	  limiti = j; break;
-	}
-      } else if(!in_limit_row(p.r, j+1, p.c)){
-	limiti = j; break;
-	}*/
-  /* for(int j = 0; j < lim_row[p.r].size(); j++)
-          if(in_limit_row(p.r, j, p.c) && (j == lim_row[p.r].size()-1 || !in_limit_row(p.r, j+1, p.c))){//only possible at [j]
-      limiti = j;
-      break;
-      }*/
-  //if(limiti != -1)
-  //  printf("(%d, %d) only one answer at %dth row limit\n", p.r, p.c, limiti+1);
-  if(limiti == -1 || !updateLimitByGrid_row(p.r, limiti, p.c)){
+  if(limiti == -1 || !updateLimitByGrid_row(p.r, limiti, p.c)){//is later statement possible?
     //printf("no new update\n", p.r, p.c);
     return false;//no answer//temp erase
   } else {
-    /*for(int i = lim_row[p.r][limiti].fs; i <= lim_row[p.r][limiti].ls+lim_row[p.r][limiti].l-1; i++){
-      if(i == p.c)
-	continue;
-      if(b[p.r][i] != SPACE && only_in_one_limit_row(p.r, i, limiti)){
-	//printf("(%d, %d)only in %d limit row\n", p.r, i, limiti);
-	updateLimitByGrid_row(p.r, limiti, i);
-      }
-      }*/
+    
   }
   return true;
 }

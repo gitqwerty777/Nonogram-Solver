@@ -11,6 +11,9 @@ struct Limit{
     fs = a; ls = b;
     fe = fs+l-1; le = ls+l-1;
   }
+  bool isSolved(){
+    return (fs == ls);
+  }
 };
 
 struct Point{
