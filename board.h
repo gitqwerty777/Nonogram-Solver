@@ -31,7 +31,7 @@ struct Board{
       b[i].resize(c);
     lim_row = lr; lim_col = lc;
     solved_num = 0;
-    set_num = 0;
+    alreadySetGridNumber = 0;
     h_row.resize(r); h_col.resize(c);
     change_row.resize(r); change_col.resize(c);
     solved_row.resize(r); solved_col.resize(c);
@@ -45,24 +45,24 @@ struct Board{
   vector<int> change_row, change_col;
   vector<bool> solved_row, solved_col;
   int solved_num;
-  int set_num;
+  int alreadySetGridNumber;
 
   //logic reasoning
   bool pre_process();
   void fill_row(int i);
   void fill_col(int i);
-  bool update_row(struct Point p, int v);//fill a new block, find other block can be updated or not
-  bool update_col(struct Point p, int v);
-  bool update_limit_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
-  bool update_limit_row(int linei, int limiti, int i);
+  bool updateLimit_row(struct Point p, int v);//fill a new block, find other block can be updated or not
+  bool updateLimit_col(struct Point p, int v);
+  bool updateLimitByGrid_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
+  bool updateLimitByGrid_row(int linei, int limiti, int i);
   bool in_limit_col(int linei, int limiti, int i);//whether the block would only be in specified limit
   bool in_limit_row(int linei, int limiti, int i);
   bool only_in_one_limit_col(int r, int c, int limiti);
   bool only_in_one_limit_row(int r, int c, int limiti);
   void update_lim_col(int, int,int,int);
   void update_lim_row(int, int,int,int);
-  void update_line_col(int);
-  void update_line_row(int);
+  void refill_col(int);
+  void refill_row(int);
   //board
   void fillGrid(int r, int c, int v);
   void print_board(const char[]);
@@ -74,7 +74,7 @@ struct Board{
   //heuristic
   void update_h();
   void check_solve(line_type type, int line);
-  bool guess(int, int);
+  bool updateHeuristic(int, int);
   bool heuristic();
   bool isSolved();
 };
