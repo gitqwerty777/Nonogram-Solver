@@ -14,22 +14,14 @@ input format:
 line 1: row column(with space seperated)
 line 2 ~ r+1: row constraints(with space seperated)
 line r+2 ~ r+c+1: column constraint(with space seperated)
-
 output:
 with number (1 = black, -1 = white, 0 = space) and graph and some debug information
 */
 
-int main(){
-  int r, c;
+int r, c;
+vector< vector<struct Limit> > lim_row, lim_col;
+void readInputLimit(){
   char in[10000];//big enough
-  int cons;
-  vector< vector<struct Limit> > lim_row;
-vector< vector<struct Limit> > lim_col;
-  setlocale(LC_ALL, "");
-
-  clock_t begin, end;  double time_spent;
-  begin = clock();
-
   scanf("%d %d", &r, &c);
   lim_row.resize(r);  lim_col.resize(c);
   gets(in);//dumb
@@ -51,23 +43,20 @@ vector< vector<struct Limit> > lim_col;
       p = strtok(NULL, " ");
     }
   }
+}
+
+int main(){
+  setlocale(LC_ALL, "");
+  clock_t beginTime = clock();
+  readInputLimit();
   struct Board board(r, c, lim_row, lim_col);
-  //pre process
-  for(int i = 0; i < c; i++)
-    board.fill_col(i);
-  board.print_board("after col");
-  for(int i = 0 ; i < r; i++)
-    board.fill_row(i);
-  board.print_board("after col and row");
-  
-  puts("start heuristic");
-  while(!board.check_all_solved()){// if find every block solved, exit(check by solved_line_num)
-    if(!board.heuristic()){//no update
-    }
+  board.doHeuristic();
+  if(!board.isSolved()){// if find every block solved, exit(check by solved_line_num)
+    board.doDFS();
   }
   board.print_board("after solved");
-  end = clock();
-  time_spent = (double(end) - double(begin)) / CLOCKS_PER_SEC;
-  printf("time spent: %lf\n", time_spent);
+  clock_t endTime = clock();
+  printf("time spent: %lf\n", (double(endTime) - double(beginTime)) / CLOCKS_PER_SEC);
   return 0;
 }
+
