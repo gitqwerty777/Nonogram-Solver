@@ -51,35 +51,40 @@ struct Board{
   int alreadySetGridNumber;
 
   //logic reasoning
-  bool pre_process();
-  void fill_row(int i);
-  void fill_col(int i);
+  //bool pre_process();
+  //void update_lim_col(int, int,int,int);
+  //void update_lim_row(int, int,int,int);
+
+  void doHeuristic();
+  bool updateHeuristic(int, int);
+  bool heuristic();
+  //update limit by heuristic
   bool updateLimit_row(struct Point p, int v);//fill a new block, find other block can be updated or not
   bool updateLimit_col(struct Point p, int v);
   bool updateLimitByGrid_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
   bool updateLimitByGrid_row(int linei, int limiti, int i);
+  //fill grids based on limit
+  void initialFillRow(int i);
+  void initialFillCol(int i);
+  void fillColByLimit(int);
+  void fillRowByLimit(int);
+  void fill_blank_row(int);
+  void fill_blank_col(int);
+  void fillGrid(int r, int c, int v);//fill single grid
+  //check the relationship between grid and limit
   bool in_limit_col(int linei, int limiti, int i);//whether the block would only be in specified limit
   bool in_limit_row(int linei, int limiti, int i);
   bool only_in_one_limit_col(int r, int c, int limiti);
   bool only_in_one_limit_row(int r, int c, int limiti);
-  void update_lim_col(int, int,int,int);
-  void update_lim_row(int, int,int,int);
-  void refill_col(int);
-  void refill_row(int);
-  //board
-  void fillGrid(int r, int c, int v);
-  void print_board(const char[]);
-  void fill_blank_row(int);
-  void fill_blank_col(int);
-  void doHeuristic();
+  
   void doDFS();
 
-  //heuristic
-  void update_h();
-  void check_solve(line_type type, int line);
-  bool updateHeuristic(int, int);
-  bool heuristic();
+  //high-level functions related to board
+  //void update_h();
+  void isLineSolved(line_type type, int line);
   bool isSolved();
+
+  void printBoard(const char[]);//for debug usage
 };
 
 

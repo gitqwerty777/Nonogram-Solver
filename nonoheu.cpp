@@ -54,7 +54,7 @@ int main(){
   if(!board.isSolved()){// if find every block solved, exit(check by solved_line_num)
     board.doDFS();
   }
-  board.print_board("after solved");
+  board.printBoard("after solved");
   clock_t endTime = clock();
   printf("time spent: %lf\n", (double(endTime) - double(beginTime)) / CLOCKS_PER_SEC);
   return 0;
