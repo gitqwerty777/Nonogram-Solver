@@ -6,7 +6,7 @@ using namespace std;
 struct Limit{
   int l;
   int fs, ls, fe, le;
-  Limit(int ll){l = ll;}
+  Limit(int ll){l = ll; fs=0; ls=0;}
   void set_pos(int a, int b){
     fs = a; ls = b;
     fe = fs+l-1; le = ls+l-1;
@@ -83,6 +83,8 @@ struct Board{
   //void update_h();
   void isLineSolved(line_type type, int line);
   bool isSolved();
+  void setRowLimitSolved(int ri, int limiti);
+  void setColLimitSolved(int ri, int limiti);
 
   void printBoard(const char[]);//for debug usage
 };

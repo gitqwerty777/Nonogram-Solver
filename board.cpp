@@ -4,7 +4,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <assert.h>
 #define MAXINT 2147483647
+#define INF 2147483647
 using namespace std;
 
 #define BLACK 1
@@ -52,29 +54,43 @@ void Board::fill_blank_col(int nowc){
 void Board::fill_blank_row(int nowr){
   fillRowByLimit(nowr);
 
-  int minl = 0;
-  for(int i = 1; i < lim_row[nowr].size(); i++)
-    if(!lim_row[nowr][i].isSolved() && minl > lim_row[nowr][i].l)
+  int minl = INF;
+  //  int maxl = INF;
+  for(int i = 0; i < lim_row[nowr].size(); i++){
+    if(!lim_row[nowr][i].isSolved() && minl > lim_row[nowr][i].l){
       minl = lim_row[nowr][i].l;
-  if(minl == 0){
+    }
+    
+    //if(!lim_row[nowr][i].isSolved() && maxl < lim_row[nowr][i].l)
+    //minl = lim_row[nowr][i].l;
+  }
+  if(minl == INF){
     return;
   }
 
   int nowb = 0;
+  bool allblack = true;
   for(int i = 0;i < c; i++){
-    if(b[nowr][i] != WHITE){
-      nowb++;
-      if(i == c-1)//last
-	if(nowb < minl)
-	  for(int j = 0; j < nowb; j++)
-	    fillGrid(nowr, i-j, WHITE);  
-    } else{
-      if(nowb < minl)
-	for(int j = 0; j < nowb; j++)
+    if(b[nowr][i] == WHITE){
+      if(nowb < minl && !allblack){
+	printBoard("before fillblank");
+	printf("fillblank: nowb = %d, minl = %d, (%d, %d~%d), white\n", nowb, minl, nowr, i, i-nowb+1);
+	for(int j = 0; j < nowb; j++){
 	  fillGrid(nowr, i-j, WHITE);
+	}
+      }
       nowb = 0;
+      allblack = true;
+    } else {
+      if(b[nowr][i] == SPACE){
+	allblack = false;
+      }
+      nowb++;
     }
   }
+  if(nowb < minl)//the last non-white sequence
+    for(int j = 0; j < nowb; j++)
+      fillGrid(nowr, c-1-j, WHITE);
 }
 
 bool Board::isSolved(){
@@ -264,16 +280,18 @@ bool Board::updateHeuristic(int type, int line){//if there are no any hint can s
   if(type == 1){//row
     printf("updateHeuristic: row%d\n", line);
     fillRowByLimit(line);
-    for(int j = 0; j < c; j++)
+    for(int j = 0; j < c; j++){
       if(b[line][j] != SPACE)
 	updateLimit_row(Point(line,j), b[line][j]);
+    }
     fill_blank_row(line);
   } else {
     printf("updateHeuristic: col%d\n", line);
     fillColByLimit(line);
-    for(int j = 0; j < r; j++)
+    for(int j = 0; j < r; j++){
       if(b[j][line] != SPACE)
 	updateLimit_col(Point(j, line), b[j][line]);
+    }
     fill_blank_col(line);
   }
   return originalSetnum != alreadySetGridNumber;//is really updated or not
@@ -385,15 +403,7 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int i){//update fs, ls 
     }
   lim_col[linei][limiti].set_pos(fs, ls);
   if(fs == ls){//solve this limit successfully!
-    for(int i = 0; i < lim_col[linei][limiti].l; i++)
-      fillGrid(fs+i,linei,BLACK);
-    if(fs - 1 >= 0)
-      fillGrid(fs-1,linei,WHITE);
-    if(ls +l < r)
-      fillGrid(ls+l,linei,WHITE);
-    fill_blank_col(linei);
-    //fillColByLimit(linei);
-    isLineSolved(COL, linei);
+    setColLimitSolved(linei, limiti);
   }
   return true;
 }
@@ -480,15 +490,7 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){//copy
     }
   lim_row[linei][limiti].set_pos(fs,ls);
   if(fs == ls){
-    for(int i = 0; i < lim_row[linei][limiti].l; i++)
-      fillGrid(linei,fs+i,BLACK);
-    if(fs - 1 >= 0)
-      fillGrid(linei,fs-1,WHITE);
-    if(ls + l < c)
-      fillGrid(linei,ls+l,WHITE);
-    fill_blank_row(linei);
-    //fillRowByLimit(linei);
-    isLineSolved(ROW, linei);
+    setRowLimitSolved(linei, limiti);
   } 
   return true;
 }
@@ -580,7 +582,7 @@ void Board::printBoard(const char in[]){
     }
     puts("");
   }
-  for(int i = 0; i < r; i++){
+  /*for(int i = 0; i < r; i++){
     for(int j = 0; j < c; j++){
       if(b[i][j] == 1)
 	printf("%ls", black);
@@ -590,24 +592,56 @@ void Board::printBoard(const char in[]){
 	printf("%ls", space);
     }
     printf("%ls", cl);
-  }
+    }*/
   //additional: print all limits
   for(int i = 0; i < r; i++){
-    printf("row %d\n", i+1);
+    printf("\nrow %d: ", i+1);
     for(int j = 0; j < lim_row[i].size(); j++){
-      printf("\tlimit %d = (%d, %d)\n", j, lim_row[i][j].fs, lim_row[i][j].ls);
+      printf("(%d, %d),  ", lim_row[i][j].fs, lim_row[i][j].ls);
     }
   }
   for(int i = 0; i < c; i++){
-    printf("col %d\n", i+1);
+    printf("\ncol %d:", i+1);
     for(int j = 0; j < lim_col[i].size(); j++){
-      printf("\tlimit %d = (%d, %d)\n", j, lim_col[i][j].fs, lim_col[i][j].ls);
+      printf("(%d, %d)", lim_col[i][j].fs, lim_col[i][j].ls);
     }
   }
 }
 
+
+
+void Board::setColLimitSolved(int linei, int limiti){
+  int fs = lim_col[linei][limiti].fs;
+  int ls = lim_col[linei][limiti].ls;
+  int l = lim_col[linei][limiti].l;
+  for(int i = 0; i < l; i++)
+    fillGrid(fs+i,linei,BLACK);
+  if(fs - 1 >= 0)
+    fillGrid(fs-1,linei,WHITE);
+  if(ls +l < r)
+    fillGrid(ls+l,linei,WHITE);
+  fill_blank_col(linei);
+  isLineSolved(COL, linei);
+}
+void Board::setRowLimitSolved(int linei, int limiti){
+  int fs = lim_row[linei][limiti].fs;
+  int ls = lim_row[linei][limiti].ls;
+  int l = lim_row[linei][limiti].l;
+  if(linei == 5 && limiti == 0){
+    printf("\n\n\n53, fs = %d, ls = %d\n", fs, ls);
+  }
+  for(int i = 0; i < l; i++)
+    fillGrid(linei,fs+i,BLACK);
+  if(fs - 1 >= 0)
+    fillGrid(linei,fs-1,WHITE);
+  if(ls + l < c)
+    fillGrid(linei,ls+l,WHITE);
+  fill_blank_row(linei);
+  isLineSolved(ROW, linei);
+}
+
 void Board::initialFillRow(int ri){//fill white betweenlast le and now fs
-  int remain = r;
+  int remain = c;
   for(int i = 0; i < lim_row[ri].size(); i++)
     remain -= lim_row[ri][i].l;
   remain -= lim_row[ri].size() - 1;
@@ -619,6 +653,9 @@ void Board::initialFillRow(int ri){//fill white betweenlast le and now fs
       lim_row[ri][i].set_pos(nowi, nowi);
       for(int j = 0; j < lim_row[ri][i].l; j++)
 	fillGrid(ri, nowi++, BLACK);
+    }
+    for(int i = 0; i < lim_row[ri].size(); i++){
+      setRowLimitSolved(ri, i);
     }
   } else { // fill partial
     int fs = 0, ls; //first start point, last start point
@@ -645,11 +682,14 @@ void Board::initialFillCol(int ci){
   if(remain == 0){//full filled
     int nowi = 0;
     for(int i = 0; i < lim_col[ci].size(); i++){
-      if(i != 0)
-	fillGrid(nowi++, ci, WHITE);
       lim_col[ci][i].set_pos(nowi, nowi);
       for(int j = 0; j < lim_col[ci][i].l; j++)
 	fillGrid(nowi++, ci, BLACK);
+      if(i != lim_col[ci].size()-1)
+	fillGrid(nowi++, ci, WHITE);
+    }
+    for(int i = 0; i < lim_col[ci].size(); i++){
+      setColLimitSolved(ci, i);
     }
   } else { // fill partial
     int fs = 0, ls; //first start point, last start point
