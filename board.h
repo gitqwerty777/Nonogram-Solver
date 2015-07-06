@@ -27,12 +27,11 @@ enum line_type{ROW, COL};
 
 struct Board{
   Board(int rr, int cc, vector< vector<struct Limit> >& lr, vector< vector<struct Limit> >& lc){
-    r = rr;
-    c = cc;
+    r = rr;  c = cc;
+    lim_row = lr; lim_col = lc;
     b.resize(r);
     for(int i = 0; i < r; i++)
       b[i].resize(c);
-    lim_row = lr; lim_col = lc;
     solved_num = 0;
     alreadySetGridNumber = 0;
     h_row.resize(r); h_col.resize(c);
@@ -42,18 +41,12 @@ struct Board{
 
   int r, c;
   vector< vector<int> > b;//board
-  vector< vector<struct Limit> > lim_row;
-  vector< vector<struct Limit> > lim_col;
+  vector< vector<struct Limit> > lim_row, lim_col;
   vector<int> h_row, h_col;
   vector<int> change_row, change_col;
   vector<bool> solved_row, solved_col;
   int solved_num;
   int alreadySetGridNumber;
-
-  //logic reasoning
-  //bool pre_process();
-  //void update_lim_col(int, int,int,int);
-  //void update_lim_row(int, int,int,int);
 
   void doHeuristic();
   bool updateHeuristic(int, int);
