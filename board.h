@@ -85,7 +85,8 @@ struct Board{
   bool isSolved();
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
-
+  bool updateLimitByLimit_row(int nowr);
+  bool updateLimitByLimit_col(int nowr);
   void printBoard(const char[]);//for debug usage
 };
 
