@@ -49,13 +49,15 @@ struct Board{
   int alreadySetGridNumber;
 
   void doHeuristic();
+  bool doHeuristicInOneLine();
   bool updateHeuristic(int, int);
-  bool heuristic();
   //update limit by heuristic
-  bool updateLimit_row(struct Point p, int v);//fill a new block, find other block can be updated or not
-  bool updateLimit_col(struct Point p, int v);
+  void updateRowLimits(struct Point p, int v);//fill a new block, find other block can be updated or not
+  void updateColLimits(struct Point p, int v);
   bool updateLimitByGrid_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
   bool updateLimitByGrid_row(int linei, int limiti, int i);
+  bool updateLimitByLimit_row(int nowr);
+  bool updateLimitByLimit_col(int nowc);
   //fill grids based on limit
   void initialFillRow(int i);
   void initialFillCol(int i);
@@ -72,14 +74,12 @@ struct Board{
   
   void doDFS();
 
-  //high-level functions related to board
-  //void update_h();
-  void isLineSolved(line_type type, int line);
-  bool isSolved();
+  //high-level functions related to limits
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
-  bool updateLimitByLimit_row(int nowr);
-  bool updateLimitByLimit_col(int nowr);
+  void isLineSolved(line_type type, int line);
+  bool isSolved();//all
+
   void printBoard(const char[]);//for debug usage
 };
 

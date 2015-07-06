@@ -14,6 +14,7 @@ input format:
 line 1: row column(with space seperated)
 line 2 ~ r+1: row constraints(with space seperated)
 line r+2 ~ r+c+1: column constraint(with space seperated)
+if no constraint, just put "0"
 output:
 with number (1 = black, -1 = white, 0 = space) and graph and some debug information
 */

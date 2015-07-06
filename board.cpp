@@ -193,11 +193,11 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
   }
 }
 
-bool Board::heuristic(){ //TODO: change to line_type
+bool Board::doHeuristicInOneLine(){ //TODO: change to line_type
   //update_h();
-  vector<pair<int, int> > maxChanged;
-  int max = -1; 
-  for(int i = 0;i < r; i++)
+    vector<pair<int, int> > maxChanged;
+    int max = -1; 
+    for(int i = 0;i < r; i++)
     if(!solved_row[i] && max <= change_row[i]){
       if(max == change_row[i]){
 	maxChanged.push_back(pair<int, int>(1, i));
@@ -205,28 +205,28 @@ bool Board::heuristic(){ //TODO: change to line_type
 	max = change_row[i];
 	maxChanged.clear();
 	maxChanged.push_back(pair<int, int>(1, i));
+	}
       }
-    }
-  for(int i = 0; i < c; i++)
-    if(!solved_col[i] && max <= change_col[i]){
-      if(max == change_col[i]){
-	maxChanged.push_back(pair<int, int>(2, i));
-      } else{
-	max = change_col[i];
-	maxChanged.clear();
-	maxChanged.push_back(pair<int, int>(2, i));
+    for(int i = 0; i < c; i++)
+      if(!solved_col[i] && max <= change_col[i]){
+	if(max == change_col[i]){
+	  maxChanged.push_back(pair<int, int>(2, i));
+	} else{
+	  max = change_col[i];
+	  maxChanged.clear();
+	  maxChanged.push_back(pair<int, int>(2, i));
+	}
       }
+    bool isChange = false;
+    for(int i = 0;i < maxChanged.size(); i++){
+      if(maxChanged[i].first == 1)
+	change_row[maxChanged[i].second] = 0;
+      else
+	change_col[maxChanged[i].second] = 0;
+      if(updateHeuristic(maxChanged[i].first, maxChanged[i].second))
+	isChange = true;
     }
-  bool isChange = false;
-  for(int i = 0;i < maxChanged.size(); i++){
-    if(maxChanged[i].first == 1)
-      change_row[maxChanged[i].second] = 0;
-    else
-      change_col[maxChanged[i].second] = 0;
-    if(updateHeuristic(maxChanged[i].first, maxChanged[i].second))
-      isChange = true;
-  }
-  return isChange;
+    return isChange;
 }
 
 bool Board::updateHeuristic(int type, int line){//if there are no any hint can solve it
@@ -237,7 +237,7 @@ bool Board::updateHeuristic(int type, int line){//if there are no any hint can s
     updateLimitByLimit_row(line);
     for(int j = 0; j < c; j++){
       if(b[line][j] != SPACE)
-	updateLimit_row(Point(line,j), b[line][j]);
+	updateRowLimits(Point(line,j), b[line][j]);
     }
     fill_blank_row(line);
   } else {
@@ -246,7 +246,7 @@ bool Board::updateHeuristic(int type, int line){//if there are no any hint can s
     updateLimitByLimit_col(line);
     for(int j = 0; j < r; j++){
       if(b[j][line] != SPACE)
-	updateLimit_col(Point(j, line), b[j][line]);
+	updateColLimits(Point(j, line), b[j][line]);
     }
     fill_blank_col(line);
   }
@@ -362,40 +362,15 @@ bool Board::only_in_one_limit_col(int nowr, int nowc, int limiti){
   return (limiti == 0 || !in_limit_col(nowc, limiti-1, nowr)) && (in_limit_col(nowc, limiti, nowr)) && (limiti == lim_col[nowc].size()-1 || !in_limit_col(nowc, limiti+1, nowr));
 }
 bool Board::in_limit_col(int nowc, int limiti, int nowr){
-  /*bool ans = (lim_col[nowc][limiti].fs <= nowr && lim_col[nowc][limiti].le >= nowr);
-  if(ans){
-    DEBUG_PRINT("(%d, %d) in col limit%d = (%d, %d)\n", nowr, nowc, limiti, lim_col[nowc][limiti].fs, lim_col[nowc][limiti].le);
-  } else {
-    DEBUG_PRINT("(%d, %d) not in col limit%d = (%d, %d)\n", nowr, nowc, limiti, lim_col[nowc][limiti].fs, lim_col[nowc][limiti].le);
-    }*/
   return (lim_col[nowc][limiti].fs <= nowr && lim_col[nowc][limiti].le >= nowr);  
 }
 
-bool Board::updateLimit_col(struct Point p, int v){//check column limit
+void Board::updateColLimits(struct Point p, int v){//check column limit
   //DEBUG_PRINT("updatelimit_col(%d, %d)\n", p.r, p.c);
-  if(v != SPACE){
-    for(int j = 0; j < lim_col[p.c].size(); j++)
-      if(in_limit_col(p.c, j, p.r))
-	updateLimitByGrid_col(p.c, j, p.r);
-  }
-  //if(v == BLACK)//....
-  //先檢查已填的格子可能是哪些constrant的部分
-  //is this important??
-  /*int limiti = -1;
   for(int j = 0; j < lim_col[p.c].size(); j++)
-    if(only_in_one_limit_col(p.r, p.c, j)){
-	  limiti = j; break;
-    }
-  if(limiti != -1){
-    if(!updateLimitByGrid_col(p.c, limiti, p.r)){
-      DEBUG_PRINT("no new update\n", p.r, p.c);
-    }
-  } else {
-    return false;//no answer//temp erase
-    }*/
-  return true;
+    if(in_limit_col(p.c, j, p.r))
+      updateLimitByGrid_col(p.c, j, p.r);
 }
-
 
 bool Board::updateLimitByLimit_col(int nowc){
   int nfs, nls;
@@ -507,26 +482,11 @@ void Board::fillRowByLimit(int nowr){
     fillGrid(nowr, i,WHITE);
 }
 
-bool Board::updateLimit_row(struct Point p, int v){//copy
+void Board::updateRowLimits(struct Point p, int v){//copy
   //DEBUG_PRINT("updatelimit_row(%d, %d)\n", p.r, p.c);
-  if(v != SPACE){
-    for(int j = 0; j < lim_row[p.r].size(); j++)
-      if(in_limit_row(p.r, j, p.c))
-	updateLimitByGrid_row(p.r, j, p.c);
-  }
-  //檢查已填的格子可能是哪些limit的一部分，用le, fe等選擇fr -> relimit(after fill)
-  int limiti = -1;
   for(int j = 0; j < lim_row[p.r].size(); j++)
-    if(only_in_one_limit_row(p.r, p.c, j)){
-	  limiti = j; break;
-    }
-  if(limiti == -1 || !updateLimitByGrid_row(p.r, limiti, p.c)){//is later statement possible?
-    //DEBUG_PRINT("no new update\n", p.r, p.c);
-    return false;//no answer//temp erase
-  } else {
-    
-  }
-  return true;
+    if(in_limit_row(p.r, j, p.c))
+      updateLimitByGrid_row(p.r, j, p.c);
 }
 
 void Board::printBoard(const char in[]){
@@ -704,8 +664,10 @@ void Board::doHeuristic(){
   printBoard("after fill col and row");
 
   //recursively do heuristic after no sure grid to fill in
+
   while(!isSolved()){
-    heuristic();
+
+    doHeuristicInOneLine();
   }
 }
 
