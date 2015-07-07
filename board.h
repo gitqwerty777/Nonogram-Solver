@@ -25,6 +25,16 @@ struct Point{
 
 enum line_type{ROW, COL};
 
+struct LineChanged{
+  line_type t;
+  int index;
+  LineChanged(line_type tt, int i){
+    t = tt;
+    index = i;
+  }
+};
+typedef struct LineChanged change;
+
 struct Board{
   Board(int rr, int cc, vector< vector<struct Limit> >& lr, vector< vector<struct Limit> >& lc){
     r = rr;  c = cc;
@@ -50,7 +60,7 @@ struct Board{
 
   void doHeuristic();
   bool doHeuristicInOneLine();
-  bool updateHeuristic(int, int);
+  bool updateHeuristic(line_type, int);
   //update limit by heuristic
   void updateRowLimits(struct Point p, int v);//fill a new block, find other block can be updated or not
   void updateColLimits(struct Point p, int v);
@@ -78,7 +88,7 @@ struct Board{
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
   void isLineSolved(line_type type, int line);
-  bool isSolved();//all
+  bool isAllSolved();//allsolved
 
   void printBoard(const char[]);//for debug usage
 };
