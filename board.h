@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <vector>
 #include <string.h>
+#include <queue>
 using namespace std;
 
 struct Limit{
@@ -25,37 +26,48 @@ struct Point{
 
 enum line_type{ROW, COL};
 
-struct LineChanged{
-  line_type t;
+class LineChanged{//TODO:
+ public:
+  line_type type;
   int index;
-  LineChanged(line_type tt, int i){
-    t = tt;
+  int changeNum;
+  LineChanged(){}
+  LineChanged(line_type tt, int i, int cn){
+    type = tt;
     index = i;
+    changeNum = cn;
+  }
+  bool operator()(const LineChanged& lc, const LineChanged& rc) const {
+    return (lc.changeNum < rc.changeNum);
   }
 };
+
 typedef struct LineChanged change;
 
+enum SOLVEMODE{HEURISTIC, DFS};
+
 struct Board{
+  Board(){}
   Board(int rr, int cc, vector< vector<struct Limit> >& lr, vector< vector<struct Limit> >& lc){
     r = rr;  c = cc;
     lim_row = lr; lim_col = lc;
     b.resize(r);
     for(int i = 0; i < r; i++)
       b[i].resize(c);
-    solved_num = 0;
+    solvedLineNum = 0;
     alreadySetGridNumber = 0;
-    h_row.resize(r); h_col.resize(c);
     change_row.resize(r); change_col.resize(c);
     solved_row.resize(r); solved_col.resize(c);
   }
 
   int r, c;
+  SOLVEMODE solveMode;
   vector< vector<int> > b;//board
   vector< vector<struct Limit> > lim_row, lim_col;
-  vector<int> h_row, h_col;
   vector<int> change_row, change_col;
   vector<bool> solved_row, solved_col;
-  int solved_num;
+
+  int solvedLineNum;
   int alreadySetGridNumber;
 
   void doHeuristic();
@@ -88,9 +100,14 @@ struct Board{
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
   void isLineSolved(line_type type, int line);
-  bool isAllSolved();//allsolved
-
+  bool isAllSolved(){//allsolved
+    return (solvedLineNum == r + c)?true:false;
+  }
+  void checkAnswer();
+  
   void printBoard(const char[]);//for debug usage
+  void no_solution(const char[]);
+  void no_solution(const char[], line_type t, int i);
 };
 
 

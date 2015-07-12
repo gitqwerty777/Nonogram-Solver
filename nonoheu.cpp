@@ -55,6 +55,7 @@ int main(){
   if(!board.isAllSolved()){//if heuristic can't update anymore, do DFS
     board.doDFS();
   }
+  board.checkAnswer();
   board.printBoard("after solved");
   clock_t endTime = clock();
   printf("time spent: %lf\n", (double(endTime) - double(beginTime)) / CLOCKS_PER_SEC);
