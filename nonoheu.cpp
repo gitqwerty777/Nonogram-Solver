@@ -52,9 +52,7 @@ int main(){
   readInputLimit();
   struct Board board(r, c, lim_row, lim_col);
   board.doHeuristic();
-  if(!board.isAllSolved()){//if heuristic can't update anymore, do DFS
-    board.doDFS();
-  }
+  board.doDFS();
   board.checkAnswer();
   board.printBoard("after solved");
   clock_t endTime = clock();

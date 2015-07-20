@@ -22,11 +22,13 @@ endif
 	@echo ".........................."
 main: heu
 	timeout 5 ./heu < input3  # simpile test to check whether bug exist or not
-heu: nonoheu.o board.o
-	$(CXX) nonoheu.o board.o -o heu; find . | grep ".*\.\(c\|h\|cpp\)" | xargs etags -f tags # generate emacs tags
-nonoheu.o: nonoheu.cpp board.h
+heu: nonoheu.o board.o dfsboard.o
+	$(CXX) nonoheu.o board.o dfsboard.o -o heu; find . | grep ".*\.\(c\|h\|cpp\)" | xargs etags -f tags # generate emacs tags
+nonoheu.o: nonoheu.cpp board.h dfsboard.h
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c
-board.o: board.cpp board.h
+board.o: board.cpp board.h 
 	$(CXX) $(CXXFLAGS) board.cpp -c
+dfsboard.o: dfsboard.cpp dfsboard.h
+	$(CXX) $(CXXFLAGS) dfsboard.cpp -c
 clean:
 	rm -rf *.o

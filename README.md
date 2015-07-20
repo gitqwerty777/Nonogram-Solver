@@ -3,8 +3,8 @@ C++ program to solve nonogram by heuristic and DFS
 
 ## Build
 
-1. `make release` can build program `heu`
-2. program built by `make debug` can print detail message on each step
+1. `make mode=release` can build program `heu`
+2. program built by `make mode=debug` can print detail message on each step(default when using `make`)
 
 ## Input Format
 

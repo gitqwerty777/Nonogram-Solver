@@ -1,3 +1,6 @@
+#ifndef BOARD_H
+#define BOARD_H
+
 #include <stdio.h>
 #include <vector>
 #include <string.h>
@@ -110,4 +113,4 @@ struct Board{
   void no_solution(const char[], line_type t, int i);
 };
 
-
+#endif
