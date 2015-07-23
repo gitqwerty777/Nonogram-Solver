@@ -7,6 +7,8 @@
 #include <queue>
 using namespace std;
 
+enum chessType{WHITE=2, BLACK=1, SPACE=0};
+
 struct Limit{
   int l;
   int fs, ls, fe, le;

@@ -9,7 +9,6 @@
 #define INF 2147483647
 using namespace std;
 
-enum chessType{WHITE=2, BLACK=1, SPACE=0};
 
 #ifdef __DEBUG__
 #define DEBUG_PRINT(fmt, args...)  \

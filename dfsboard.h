@@ -8,9 +8,22 @@ class DFSBoard: public Board{
  DFSBoard(Board& b): Board(b){
     printf("dfs board print board");
     this->printBoard("dsfsfdfsdsf");
-    sleep(10);
   }
+
+  vector< vector<int> > lastfillStart;
+  vector< vector<int> > original;
+  
+  //simpledfs
+  void DoSimpleDFS();
+  bool FillRow(int);
+  bool getNextFillStart(int, vector<int>&);
+  void FillRowbyFillStart(int, vector<int>&);
+  bool checkColumns();
+  void checkAvailableCol(int);
+  void Rewind(int);
+  //dfs with heuristic
   void DoDFS();
+  
 };
 
 #endif
