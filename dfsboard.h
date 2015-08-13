@@ -5,21 +5,26 @@
 #include "unistd.h"
 class DFSBoard: public Board{
  public:
- DFSBoard(Board& b): Board(b){
+ DFSBoard(Board& b): Board(b){//inherit
     printf("dfs board print board");
     this->printBoard("dsfsfdfsdsf");
+    lastfillStart.resize(r);
+    original.resize(r);
   }
 
   vector< vector<int> > lastfillStart;
-  vector< vector<int> > original;
+  vector< vector<vector<int> > > original;
   
   //simpledfs
+  void fillGrid(int r, int c, int v);
+  vector<int> getLimit_col(int nowc);
+  bool checkDFSAnswer();
   void DoSimpleDFS();
   bool FillRow(int);
   bool getNextFillStart(int, vector<int>&);
   void FillRowbyFillStart(int, vector<int>&);
   bool checkColumns();
-  void checkAvailableCol(int);
+  bool checkAvailableCol(int);
   void Rewind(int);
   //dfs with heuristic
   void DoDFS();

@@ -685,6 +685,8 @@ void Board::doDFS(){//TODO: implement, do multiple answer
   }
   solveMode = DFS;
   DFSBoard dfsboard(*this);
-  dfsboard.DoDFS();
+  //dfsboard.DoDFS();
+  dfsboard.DoSimpleDFS();
+  b = dfsboard.b;
 }
 
