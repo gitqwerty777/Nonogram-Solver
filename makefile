@@ -26,7 +26,7 @@ heu: nonoheu.o dfsboard.o board.o
 	$(CXX) nonoheu.o board.o dfsboard.o -o heu; find . | grep ".*\.\(c\|h\|cpp\)" | xargs etags -f tags # generate emacs tags
 nonoheu.o: nonoheu.cpp dfsboard.h board.h 
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c
-board.o: board.cpp board.h 
+board.o: board.cpp board.h dfsboard.h
 	$(CXX) $(CXXFLAGS) board.cpp -c
 dfsboard.o: dfsboard.cpp dfsboard.h board.h
 	$(CXX) $(CXXFLAGS) dfsboard.cpp -c
