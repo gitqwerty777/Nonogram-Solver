@@ -591,10 +591,10 @@ void Board::printBoard(const char in[]){
       maxlr = lim_row[i].size();
   int maxl = maxlr * 3;
   int maxlc = 0;
-  for(int i = 0; i < c; i++){
+  for(int i = 0; i < c; i++)
     if(maxlc < lim_col[i].size())
       maxlc = lim_col[i].size();
-  }
+  
   for(int i = maxlc-1; i >= 0 ; i--){
     printf("%*s ", maxl, "");
     for(int j = 0; j < c; j++)
@@ -658,12 +658,12 @@ void Board::checkAnswer(){
       }
     }
     if(lim_row[i].size() != seq.size()){
-      no_solution("wrong answer in", ROW, i);
+      no_solution("checkAnswer: wrong answer in", ROW, i);
       return;
     }
     for(int j = 0; j < lim_row[i].size(); j++)
       if(lim_row[i][j].l != seq[j]){
-	no_solution("wrong answer in", ROW, i);
+	no_solution("checkAnswer: wrong answer in", ROW, i);
 	return;
       }
   }
@@ -678,12 +678,12 @@ void Board::checkAnswer(){
       }
     }
     if(lim_col[i].size() != seq.size()){
-      no_solution("wrong answer in", COL, i);
+      no_solution("checkAnswer: wrong answer in", COL, i);
       return;
     }
     for(int j = 0; j < lim_col[i].size(); j++)
       if(lim_col[i][j].l != seq[j]){
-	no_solution("wrong answer in", COL, i);
+	no_solution("checkAnswer: wrong answer in", COL, i);
 	return;
       }
   }

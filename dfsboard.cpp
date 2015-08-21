@@ -6,37 +6,7 @@ void DFSBoard::fillGrid(int r, int c, int v){
   b[r][c] = v;
 }
 
-vector<int> DFSBoard::getLimit_col(int nowc){
-  vector<int> limit;
-  for(int i = 0; i < r; i++){
-    if(b[i][nowc] == BLACK){
-      int count = 0;
-      while(i < r && b[i][nowc] == BLACK){
-	count++; i++;
-      }
-      limit.push_back(count);
-    }
-  }
-  return limit;
-}
-
-bool DFSBoard::checkDFSAnswer(){
-  for(int i = 0; i < c; i++){
-    vector<int> limit = getLimit_col(i);
-    printf("get limit col = %d:", i);
-    for(int k = 0; k < limit.size(); k++)
-      printf("%d ", limit[k]);
-    puts("");
-    if(limit.size() != lim_col[i].size())
-      return false;
-    for(int j = 0; j < lim_col[i].size(); j++)
-      if(limit[j] != lim_col[i][j].l)
-	return false;
-  }
-  printBoard("checkdfsanswer complete!");
-  return true;
-}
-
+//Simple DFS
 void DFSBoard::DoSimpleDFS(){//without heuristic, only use DFS + backtrace search
   puts("dosimpleDFS");
   int nowr = 0;
@@ -57,7 +27,35 @@ void DFSBoard::DoSimpleDFS(){//without heuristic, only use DFS + backtrace searc
     }
   }
 }
-
+bool DFSBoard::checkDFSAnswer(){
+  for(int i = 0; i < c; i++){
+    vector<int> limit = getLimit_col(i);
+    printf("get limit col = %d:", i);
+    for(int k = 0; k < limit.size(); k++)
+      printf("%d ", limit[k]);
+    puts("");
+    if(limit.size() != lim_col[i].size())
+      return false;
+    for(int j = 0; j < lim_col[i].size(); j++)
+      if(limit[j] != lim_col[i][j].l)
+	return false;
+  }
+  printBoard("check dfs answer complete!");
+  return true;
+}
+vector<int> DFSBoard::getLimit_col(int nowc){
+  vector<int> limit;
+  for(int i = 0; i < r; i++){
+    if(b[i][nowc] == BLACK){
+      int count = 0;
+      while(i < r && b[i][nowc] == BLACK){
+	count++; i++;
+      }
+      limit.push_back(count);
+    }
+  }
+  return limit;
+}
 bool DFSBoard::getPreviousFillStart(vector<int>& fillStart, int nowr){
   if(lastfillStart[nowr].size() == 0){//this row is not tried yet
     fillStart.resize(lim_row[nowr].size());
@@ -71,7 +69,6 @@ bool DFSBoard::getPreviousFillStart(vector<int>& fillStart, int nowr){
   }
   return true;
 }
-
 bool DFSBoard::FillRow(int nowr){//is vector copy by reference?
   vector<int> fillStart;
   printf("fillRow%d\n", nowr);
@@ -133,7 +130,6 @@ bool DFSBoard::checkColumns(){
     isLegal = isLegal && checkAvailableCol(i);
   return isLegal;
 }
-
 bool DFSBoard::checkAvailableCol(int nowc){//not implement yet
   for(int i = 0; i < r; i++){
     
@@ -144,7 +140,6 @@ void DFSBoard::Rewind(int nowr){
   RewindBoard(original[nowr]);
   printBoard("after rewind");
 }
-
 
 //DFS with heuristic
 void DFSBoard::DoDFS(){
@@ -203,9 +198,6 @@ bool DFSBoard::FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//o
     if(b[nowr][i] == SPACE)
       fillGrid(nowr, i, WHITE);
   printBoard("beforeFillRowbyFillStartHeuristic");
-  /*for(int i = 0; i < c; i++)
-    if(!tryUpdateByHeuristic(COL, i))//do heuristic like board.cpp
-    return false;*/
   while(!isAllSolved()){
     if(!doHeuristicInOneLine())
       break;
