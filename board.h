@@ -66,6 +66,7 @@ struct Board{
   }
 
   int r, c;
+  bool tryFailed;
   SOLVEMODE solveMode;
   vector< vector<int> > b;//board
   vector< vector<struct Limit> > lim_row, lim_col;
@@ -113,6 +114,10 @@ struct Board{
   void printBoard(const char[]);//for debug usage
   void no_solution(const char[]);
   void no_solution(const char[], line_type t, int i);
+
+  vector<int> getLimit_col(int);
+  vector<int> getLimit_row(int);
+  
 };
 
 #endif

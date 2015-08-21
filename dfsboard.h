@@ -16,8 +16,7 @@ class DFSBoard: public Board{
   vector<Board> original;
   
   //simpledfs
-  void fillGrid(int r, int c, int v);
-  vector<int> getLimit_col(int nowc);
+  //void fillGrid(int r, int c, int v);
   bool checkDFSAnswer();
   void DoSimpleDFS();
   

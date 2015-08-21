@@ -2,9 +2,12 @@
 #include "dfsboard.h"
 
 //override
-void DFSBoard::fillGrid(int r, int c, int v){
+/*
+  void DFSBoard::fillGrid(int r, int c, int v){
+  puts("dfsboard fillgrid");
   b[r][c] = v;
-}
+  }
+*/
 
 //Simple DFS
 void DFSBoard::DoSimpleDFS(){//without heuristic, only use DFS + backtrace search
@@ -43,19 +46,7 @@ bool DFSBoard::checkDFSAnswer(){
   printBoard("check dfs answer complete!");
   return true;
 }
-vector<int> DFSBoard::getLimit_col(int nowc){
-  vector<int> limit;
-  for(int i = 0; i < r; i++){
-    if(b[i][nowc] == BLACK){
-      int count = 0;
-      while(i < r && b[i][nowc] == BLACK){
-	count++; i++;
-      }
-      limit.push_back(count);
-    }
-  }
-  return limit;
-}
+
 bool DFSBoard::getPreviousFillStart(vector<int>& fillStart, int nowr){
   if(lastfillStart[nowr].size() == 0){//this row is not tried yet
     fillStart.resize(lim_row[nowr].size());
@@ -97,13 +88,33 @@ bool DFSBoard::getNextFillStart(int nowr, vector<int>& fillStart){
   //(0, 2), (3, 4), (5, 6)
   //0, 3, 5 -> 1, 3, 5 -> 2, 3, 5 -> 0, 4, 5 -> 1, 4, 5 -> 2, 4, 5 -> 0, 3, 6 -> 1, 3, 6 ... -> 2, 4, 6 -> false
   int preblack = 0;
+  printf("getnext");
+  for(int j = 0; j < lim_row[nowr].size(); j++){
+    printf("(%d, %d) ", lim_row[nowr][j].fs, lim_row[nowr][j].ls);
+  }
+  puts("");
+  for(int j = 0; j < lim_row[nowr].size(); j++){
+    printf("(%d) ", fillStart[j]);
+  }
+  puts("");
   while(i < lim_row[nowr].size()){
     i = 0;
     while(i < lim_row[nowr].size()){
       if(lim_row[nowr][i].ls > fillStart[i]){//add 1 and return
 	fillStart[i]++;
-	if((i != 0 && fillStart[i-1] + lim_row[nowr][i].l >= fillStart[i]) || (i != lim_row[nowr].size() && fillStart[i] + lim_row[nowr][i].l >= fillStart[i+1]))// two blocks cannot be connected, continue finding next ans
+	puts("try next: ");
+	for(int j = 0; j < lim_row[nowr].size(); j++){
+	  printf("(%d) ", fillStart[j]);
+	}
+	puts("");
+	printf("%s %s\n", (i != 0)?"yes":"no", (i != lim_row[nowr].size()?"yes":"no"));
+	if(((i != 0) && fillStart[i-1] + lim_row[nowr][i].l >= fillStart[i]) || ((i != lim_row[nowr].size()-1) && fillStart[i] + lim_row[nowr][i].l >= fillStart[i+1]))// two blocks cannot be connected, continue finding next ans
 	  break;
+	puts("real next: ");
+	for(int j = 0; j < lim_row[nowr].size(); j++){
+	  printf("(%d) ", fillStart[j]);
+	}
+	puts("");
 	return true;
       } else {//fs ... ls ... fs
 	fillStart[i] = lim_row[nowr][i].fs;
@@ -111,6 +122,7 @@ bool DFSBoard::getNextFillStart(int nowr, vector<int>& fillStart){
       }
     }
   }
+  puts("cannot find next fillstart");
   return false;
 }
 void DFSBoard::FillRowbyFillStart(int nowr, vector<int>& fillStart){//or directly fill
@@ -151,8 +163,10 @@ void DFSBoard::DoDFS(){
       return;
     if(!FillRowHeuristic(nowr)){  //try all possibilities to fill the row, will filling next answer after previous called
       //all possibilities in row nowr are failed, recover board to previous row(nowr-1)
-      if(nowr == 0)
+      if(nowr == 0){
+	puts("rewind to first row: no solution:");
 	break;
+      }
       lastfillStart[nowr].clear();
       Rewind(--nowr);
     } else {// fill answer success, continue filling next row
@@ -179,10 +193,10 @@ bool DFSBoard::FillRowHeuristic(int nowr){//is vector copy by reference?
     for(int i = 0; i < lim_row[nowr].size(); i++)
       printf("%d, ", fillStart[i]);
     printf(") at row %d\n", nowr);
-    if(!FillRowbyFillStartHeuristic(nowr, fillStart))
-      return false;
-    if(checkColumns()){//check available
+    if(FillRowbyFillStartHeuristic(nowr, fillStart)){//check available
       isSuccess = true;
+    } else {
+      printf("failed after applying heuristic, try next\n");
     }
   } while(!isSuccess && getNextFillStart(nowr, fillStart));
 
@@ -191,6 +205,7 @@ bool DFSBoard::FillRowHeuristic(int nowr){//is vector copy by reference?
 }
 bool DFSBoard::FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//or directly fill
   int limitNum = lim_row[nowr].size();
+  tryFailed = false;
   for(int i = 0; i < limitNum; i++)
     for(int j = fillStart[i]; j < fillStart[i]+lim_row[nowr][i].l; j++)
       fillGrid(nowr, j, BLACK);
@@ -198,9 +213,14 @@ bool DFSBoard::FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//o
     if(b[nowr][i] == SPACE)
       fillGrid(nowr, i, WHITE);
   printBoard("beforeFillRowbyFillStartHeuristic");
-  while(!isAllSolved()){
+  while(!isAllSolved() && !tryFailed){
     if(!doHeuristicInOneLine())
       break;
+  }
+  if(tryFailed){
+    Rewind(nowr);
+    printBoard("failFillRowbyFillStartHeuristic");
+    return false;
   }
   printBoard("FillRowbyFillStartHeuristic");
   return true;
@@ -227,12 +247,12 @@ bool DFSBoard::tryUpdateByHeuristic(line_type type, int line){//if there are no 
 }
 void DFSBoard::RewindBoard(Board &b){
   this->b = b.b;
-  this->lim_row = lim_row;
-  this->lim_col = lim_col;
-  this->change_row = change_row;
-  this->change_col = change_col;
-  this->solved_row = solved_row;
-  this->solved_col = solved_col;
-  this->solvedLineNum = solvedLineNum;
-  this->alreadySetGridNumber = alreadySetGridNumber;
+  this->lim_row = b.lim_row;
+  this->lim_col = b.lim_col;
+  this->change_row = b.change_row;
+  this->change_col = b.change_col;
+  this->solved_row = b.solved_row;
+  this->solved_col = b.solved_col;
+  this->solvedLineNum = b.solvedLineNum;
+  this->alreadySetGridNumber = b.alreadySetGridNumber;
 }

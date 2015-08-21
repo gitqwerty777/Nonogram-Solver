@@ -21,6 +21,7 @@ inline void Board::no_solution(const char in[]){
   if(solveMode == HEURISTIC){
     exit(1);
   } else {
+    tryFailed = true;
     //failed in dfs searching TODO:
   }
 }
@@ -29,7 +30,7 @@ inline void Board::no_solution(const char in[], line_type t, int i){//check answ
   if(solveMode == HEURISTIC){
     exit(5);
   } else {
-    
+    tryFailed = true;
   }
 }
 
@@ -352,6 +353,10 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
       }
       fs = max(fs, seqe-l+1);//最左解右移
       ls = min(ls, seqs);//最右解左移
+      if(fs > ls){
+	tryFailed = true;
+	return false;
+      }
       DEBUG_PRINT("update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, seqs, seqe, fs, ls);
     }
   } else {//white
@@ -441,6 +446,10 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
 	  setColLimitSolved(linei, li);
 	}
       }
+      if(fs > ls){
+	tryFailed = true;
+	return false;
+      }
       DEBUG_PRINT("update black grid sequence(%d~%d, %d): limit=(%d, %d)\n", seqs, seqe, linei, fs, ls);
     }
   } else {
@@ -505,6 +514,11 @@ void Board::setRowLimitSolved(int linei, int limiti){
 }
 
 void Board::fillGrid(int r, int c, int v){
+  //printf("board fillgrid %d %d", r, c);
+  if(r < 0 || c < 0 || r >= this->r || c >= this->c){
+    tryFailed = true;
+    return;
+  }
   if(b[r][c] == SPACE){
     //DEBUG_PRINT("fillGrid (%d, %d) = %s\n", r, c, (v==1)?"BLACK":"WHITE");
     change_row[r]++;
@@ -512,9 +526,12 @@ void Board::fillGrid(int r, int c, int v){
     b[r][c] = v;
     alreadySetGridNumber++;
   } else if(b[r][c] != v){
-    printf("no solution:  ");
-    printf("illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
-    exit(2);
+    if(solveMode != DFS){
+      printf("no solution: ");
+      printf("illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
+      exit(2);
+    }
+    tryFailed = true;
   }
 }
 void Board::isLineSolved(line_type type, int line){  //check whole line is solved or not
@@ -522,6 +539,7 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
   if(type == ROW){//row
     if(solved_row[line])//already solved...
       return;
+
     bool allsolve = true;
     for(int i = 0; i < lim_row[line].size(); i++){
       if(lim_row[line][i].isSolved())
@@ -531,12 +549,13 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
 	break;
       }
     }
+
     if(allsolve){
       DEBUG_PRINT("%d row all solve\n", line);
       solved_row[line] = true;
       solvedLineNum++;
       int nowi = 0; int nowc = 0;
-      while(nowi < lim_row[line].size()){
+      while(nowi < lim_row[line].size() && nowc < c){
 	if(nowc == lim_row[line][nowi].fs){
 	  for(int i = 0; i < lim_row[line][nowi].l; i++)
 	    fillGrid(line, nowc++, BLACK);
@@ -560,12 +579,13 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
 	break;
       }
     }
+
     if(allsolve){
       DEBUG_PRINT("%d col all solve\n", line);
       solved_col[line] = true;
       solvedLineNum++;
       int nowi = 0; int nowr = 0;
-      while(nowi < lim_col[line].size()){
+      while(nowi < lim_col[line].size() && nowr < r){
 	//DEBUG_PRINT("nowr %d\n", nowr);
 	if(nowr == lim_col[line][nowi].fs){
 	  for(int i = 0; i < lim_col[line][nowi].l; i++)
@@ -580,6 +600,34 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
     }
   }
 }
+
+vector<int> Board::getLimit_row(int nowr){
+  vector<int> limit;
+  for(int i = 0; i < c; i++){
+    if(b[nowr][i] == BLACK){
+      int count = 0;
+      while(i < c && b[nowr][i] == BLACK){
+	count++; i++;
+      }
+      limit.push_back(count);
+    }
+  }
+  return limit;
+}
+vector<int> Board::getLimit_col(int nowc){
+  vector<int> limit;
+  for(int i = 0; i < r; i++){
+    if(b[i][nowc] == BLACK){
+      int count = 0;
+      while(i < r && b[i][nowc] == BLACK){
+	count++; i++;
+      }
+      limit.push_back(count);
+    }
+  }
+  return limit;
+}
+
 
 wchar_t boardchar[3][20] = {L" ", L"\u25A0", L"\u25A1"};//space black white
 wchar_t cl[] = L"\n";
