@@ -13,24 +13,28 @@ class DFSBoard: public Board{
   }
 
   vector< vector<int> > lastfillStart;
-  vector< vector<vector<int> > > original;
+  vector<Board> original;
   
   //simpledfs
   void fillGrid(int r, int c, int v);
   vector<int> getLimit_col(int nowc);
   bool checkDFSAnswer();
   void DoSimpleDFS();
+  
   bool FillRow(int);
+  bool getPreviousFillStart(vector<int>&, int);
   bool getNextFillStart(int, vector<int>&);
   void FillRowbyFillStart(int, vector<int>&);
+  
   bool checkColumns();
   bool checkAvailableCol(int);
   void Rewind(int);
   //dfs with heuristic
   void DoDFS();
-
-  bool getPreviousFillStart(vector<int>&, int);
-  
+  bool FillRowHeuristic(int);
+  bool FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart);
+  bool tryUpdateByHeuristic(line_type type, int line);
+  void RewindBoard(Board &b);
 };
 
 #endif

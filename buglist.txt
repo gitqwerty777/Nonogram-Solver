@@ -1,0 +1,2 @@
+1. input5 does not exit after complete
+2. input6 not complete

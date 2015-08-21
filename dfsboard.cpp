@@ -78,13 +78,12 @@ bool DFSBoard::FillRow(int nowr){//is vector copy by reference?
   if(!getPreviousFillStart(fillStart, nowr))
     return false;
   
-  original[nowr] = b; //backup
+  original[nowr] = (*this); //backup
   bool isSuccess = false;
   do{
     printf("test (");
-    for(int i = 0; i < lim_row[nowr].size(); i++){
+    for(int i = 0; i < lim_row[nowr].size(); i++)
       printf("%d, ", fillStart[i]);
-    }
     printf(") at row %d\n", nowr);
     FillRowbyFillStart(nowr, fillStart);
     if(checkColumns()){//check available
@@ -134,6 +133,7 @@ bool DFSBoard::checkColumns(){
     isLegal = isLegal && checkAvailableCol(i);
   return isLegal;
 }
+
 bool DFSBoard::checkAvailableCol(int nowc){//not implement yet
   for(int i = 0; i < r; i++){
     
@@ -141,16 +141,20 @@ bool DFSBoard::checkAvailableCol(int nowc){//not implement yet
 }
 void DFSBoard::Rewind(int nowr){
   printf("rewind %d\n", nowr);
-  for(int i = 0; i < c; i++)
-    b[nowr][i] = original[nowr][nowr][i];
+  RewindBoard(original[nowr]);
   printBoard("after rewind");
 }
+
+
+//DFS with heuristic
 void DFSBoard::DoDFS(){
   //TODO: choose an answer of the line with minimum possible answer() -> use heuristic to fill board -> check other lineis legal or not -> if legal, next line
   puts("doDFS");
   int nowr = 0;
   while(nowr <= r){
-    if(!FillRow(nowr)){  //try all possibilities to fill the row, will filling next answer after previous called
+    if(isAllSolved())
+      return;
+    if(!FillRowHeuristic(nowr)){  //try all possibilities to fill the row, will filling next answer after previous called
       //all possibilities in row nowr are failed, recover board to previous row(nowr-1)
       if(nowr == 0)
 	break;
@@ -166,4 +170,77 @@ void DFSBoard::DoDFS(){
     }
   }
   //if no answer, no_solution() and exit
+}
+bool DFSBoard::FillRowHeuristic(int nowr){//is vector copy by reference?
+  vector<int> fillStart;
+  printf("fillRow%d\n", nowr);
+  if(!getPreviousFillStart(fillStart, nowr))
+    return false;
+  
+  original[nowr] = (*this); //backup
+  bool isSuccess = false;
+  do{
+    printf("test (");
+    for(int i = 0; i < lim_row[nowr].size(); i++)
+      printf("%d, ", fillStart[i]);
+    printf(") at row %d\n", nowr);
+    if(!FillRowbyFillStartHeuristic(nowr, fillStart))
+      return false;
+    if(checkColumns()){//check available
+      isSuccess = true;
+    }
+  } while(!isSuccess && getNextFillStart(nowr, fillStart));
+
+  lastfillStart[nowr] = fillStart;
+  return isSuccess;
+}
+bool DFSBoard::FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//or directly fill
+  int limitNum = lim_row[nowr].size();
+  for(int i = 0; i < limitNum; i++)
+    for(int j = fillStart[i]; j < fillStart[i]+lim_row[nowr][i].l; j++)
+      fillGrid(nowr, j, BLACK);
+  for(int i = 0; i < c; i++)
+    if(b[nowr][i] == SPACE)
+      fillGrid(nowr, i, WHITE);
+  printBoard("beforeFillRowbyFillStartHeuristic");
+  /*for(int i = 0; i < c; i++)
+    if(!tryUpdateByHeuristic(COL, i))//do heuristic like board.cpp
+    return false;*/
+  while(!isAllSolved()){
+    if(!doHeuristicInOneLine())
+      break;
+  }
+  printBoard("FillRowbyFillStartHeuristic");
+  return true;
+}
+bool DFSBoard::tryUpdateByHeuristic(line_type type, int line){//if there are no any hint can solve it
+  int originalSetnum = alreadySetGridNumber;
+  if(type == ROW){
+    fillRowByLimit(line);
+    updateLimitByLimit_row(line);
+    for(int j = 0; j < c; j++)
+      if(b[line][j] != SPACE)
+	updateRowLimits(Point(line,j), b[line][j]);
+    fill_blank_row(line);
+  } else {
+    fillColByLimit(line);
+    updateLimitByLimit_col(line);
+    for(int j = 0; j < r; j++){
+      if(b[j][line] != SPACE)
+	updateColLimits(Point(j, line), b[j][line]);
+    }
+    fill_blank_col(line);
+  }
+  return originalSetnum != alreadySetGridNumber;//is really updated or not
+}
+void DFSBoard::RewindBoard(Board &b){
+  this->b = b.b;
+  this->lim_row = lim_row;
+  this->lim_col = lim_col;
+  this->change_row = change_row;
+  this->change_col = change_col;
+  this->solved_row = solved_row;
+  this->solved_col = solved_col;
+  this->solvedLineNum = solvedLineNum;
+  this->alreadySetGridNumber = alreadySetGridNumber;
 }

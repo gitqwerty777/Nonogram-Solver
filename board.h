@@ -22,8 +22,6 @@ struct Limit{
   }
 };
 
-
-
 struct Point{
   int r, c;
   Point(int rr, int cc){
@@ -79,7 +77,7 @@ struct Board{
 
   void doHeuristic();
   bool doHeuristicInOneLine();
-  bool updateHeuristic(line_type, int);
+  bool updateByHeuristic(line_type, int);
   //update limit by heuristic
   void updateRowLimits(struct Point p, int v);//fill a new block, find other block can be updated or not
   void updateColLimits(struct Point p, int v);

@@ -9,7 +9,6 @@
 #define INF 2147483647
 using namespace std;
 
-
 #ifdef __DEBUG__
 #define DEBUG_PRINT(fmt, args...)  \
   fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, __LINE__, __FUNCTION__, ##args)
@@ -18,8 +17,8 @@ using namespace std;
 #endif
 
 inline void Board::no_solution(const char in[]){
+  printf("no solution: %s\n", in);
   if(solveMode == HEURISTIC){
-    printf("no solution: %s\n", in);
     exit(1);
   } else {
     //failed in dfs searching TODO:
@@ -27,7 +26,11 @@ inline void Board::no_solution(const char in[]){
 }
 inline void Board::no_solution(const char in[], line_type t, int i){//check answer failed
   printf("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
-  exit(5);
+  if(solveMode == HEURISTIC){
+    exit(5);
+  } else {
+    
+  }
 }
 
 void Board::doHeuristic(){
@@ -142,11 +145,10 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
 	mychange = &change_col[ch.index];
       *mychange = 0;
       DEBUG_PRINT("update %d %d\n", ch.type, ch.index);
-      if(updateHeuristic(ch.type, ch.index))
+      if(updateByHeuristic(ch.type, ch.index))
 	isChange = true;
       if(*mychange != 0)
 	sortedChangedList.push(LineChanged(ch.type, ch.index, *mychange));
-      
     }
     if(!isChange && maxChangeNum == 0){
       DEBUG_PRINT("NO HEURISTIC ANSWER\n");
@@ -154,7 +156,7 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
     }
     return true;
 }
-bool Board::updateHeuristic(line_type type, int line){//if there are no any hint can solve it
+bool Board::updateByHeuristic(line_type type, int line){//if there are no any hint can solve it
   int originalSetnum = alreadySetGridNumber;
   if(type == ROW){
     DEBUG_PRINT("updateHeuristic: row%d\n", line);
@@ -655,11 +657,15 @@ void Board::checkAnswer(){
 	seq.push_back(count);
       }
     }
-    if(lim_row[i].size() != seq.size())
+    if(lim_row[i].size() != seq.size()){
       no_solution("wrong answer in", ROW, i);
+      return;
+    }
     for(int j = 0; j < lim_row[i].size(); j++)
-      if(lim_row[i][j].l != seq[j])
+      if(lim_row[i][j].l != seq[j]){
 	no_solution("wrong answer in", ROW, i);
+	return;
+      }
   }
   for(int i = 0; i < c; i++){
     seq.clear();
@@ -671,22 +677,25 @@ void Board::checkAnswer(){
 	seq.push_back(count);
       }
     }
-    if(lim_col[i].size() != seq.size())
+    if(lim_col[i].size() != seq.size()){
       no_solution("wrong answer in", COL, i);
+      return;
+    }
     for(int j = 0; j < lim_col[i].size(); j++)
-      if(lim_col[i][j].l != seq[j])
+      if(lim_col[i][j].l != seq[j]){
 	no_solution("wrong answer in", COL, i);
+	return;
+      }
   }
 }
 
 void Board::doDFS(){//TODO: implement, do multiple answer
-  if(isAllSolved()){//if heuristic can't update anymore, do DFS
+  if(isAllSolved())//if heuristic can't update anymore, do DFS
     return;
-  }
   solveMode = DFS;
   DFSBoard dfsboard(*this);
-  //dfsboard.DoDFS();
-  dfsboard.DoSimpleDFS();
+  dfsboard.DoDFS();
+  //dfsboard.DoSimpleDFS();
   b = dfsboard.b;
 }
 
