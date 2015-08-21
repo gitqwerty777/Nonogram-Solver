@@ -28,6 +28,8 @@ class DFSBoard: public Board{
   void Rewind(int);
   //dfs with heuristic
   void DoDFS();
+
+  bool getPreviousFillStart(vector<int>&, int);
   
 };
 

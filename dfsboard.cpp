@@ -38,29 +38,27 @@ bool DFSBoard::checkDFSAnswer(){
 }
 
 void DFSBoard::DoSimpleDFS(){//without heuristic, only use DFS + backtrace search
-
   puts("dosimpleDFS");
-  int i = 0;
-  while(i <= r){
-    if(!FillRow(i)){  //try all possibilities to fill the row, will filling next answer after previous called
-      //all possibilities in row i are failed, recover board to i-1 row
-      if(i == 0)
+  int nowr = 0;
+  while(nowr <= r){
+    if(!FillRow(nowr)){  //try all possibilities to fill the row, will filling next answer after previous called
+      //all possibilities in row nowr are failed, recover board to previous row(nowr-1)
+      if(nowr == 0)
 	break;
-      lastfillStart[i].clear();
-      Rewind(--i);
+      lastfillStart[nowr].clear();
+      Rewind(--nowr);
     } else {// fill answer success, continue filling next row
-      i++;
-      if(i == r)//complete, check column again
+      nowr++;
+      if(nowr == r)//complete, check column again
 	if(checkDFSAnswer())
 	  return;
 	else
-	  Rewind(--i);
+	  Rewind(--nowr);
     }
   }
 }
-bool DFSBoard::FillRow(int nowr){//is vector copy by reference?
-  vector<int> fillStart;
-  printf("fillRow%d\n", nowr);
+
+bool DFSBoard::getPreviousFillStart(vector<int>& fillStart, int nowr){
   if(lastfillStart[nowr].size() == 0){//this row is not tried yet
     fillStart.resize(lim_row[nowr].size());
     for(int i = 0; i < lim_row[nowr].size(); i++){
@@ -71,7 +69,16 @@ bool DFSBoard::FillRow(int nowr){//is vector copy by reference?
     if(!getNextFillStart(nowr, fillStart))
       return false;
   }
-  original[nowr] = b;
+  return true;
+}
+
+bool DFSBoard::FillRow(int nowr){//is vector copy by reference?
+  vector<int> fillStart;
+  printf("fillRow%d\n", nowr);
+  if(!getPreviousFillStart(fillStart, nowr))
+    return false;
+  
+  original[nowr] = b; //backup
   bool isSuccess = false;
   do{
     printf("test (");
@@ -139,29 +146,24 @@ void DFSBoard::Rewind(int nowr){
   printBoard("after rewind");
 }
 void DFSBoard::DoDFS(){
-  //find line with minimum possible answer 
-  //try by line order first
-  /*int rewindindex = 0;
-  while(rewindindex != r){
-    int errorcode = 0;
-    while(FillRowAndUpdate(i) != 0){//if fill this cause other line error, refill, if no answer, return -2
-      if(errorCode == -2){
-	Rewind(--rewindindex);
-      }
-      Rewind(i);//recover snapshot
-      
-    }
-    if(errorcode == -2){
-
+  //TODO: choose an answer of the line with minimum possible answer() -> use heuristic to fill board -> check other lineis legal or not -> if legal, next line
+  puts("doDFS");
+  int nowr = 0;
+  while(nowr <= r){
+    if(!FillRow(nowr)){  //try all possibilities to fill the row, will filling next answer after previous called
+      //all possibilities in row nowr are failed, recover board to previous row(nowr-1)
+      if(nowr == 0)
+	break;
+      lastfillStart[nowr].clear();
+      Rewind(--nowr);
+    } else {// fill answer success, continue filling next row
+      nowr++;
+      if(nowr == r)//complete, check column again
+	if(checkDFSAnswer())
+	  return;
+	else
+	  Rewind(--nowr);
     }
   }
-  for(int j = 0; j < c; j++){
-    FillCol(j);
-    }*/
-  
-  //try an answer and search, can use heuristic either
-
-  //if find answer, return
-
-  //if no answer, no_solution()
+  //if no answer, no_solution() and exit
 }
