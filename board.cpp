@@ -21,6 +21,7 @@ inline void Board::no_solution(const char in[]){
   if(solveMode == HEURISTIC){
     exit(1);
   } else {
+    printf("no solution: %s\n", in);
     tryFailed = true;
     //failed in dfs searching TODO:
   }
@@ -30,6 +31,7 @@ inline void Board::no_solution(const char in[], line_type t, int i){//check answ
   if(solveMode == HEURISTIC){
     exit(5);
   } else {
+    printf("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
     tryFailed = true;
   }
 }
@@ -357,6 +359,7 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
       fs = max(fs, seqe-l+1);//最左解右移
       ls = min(ls, seqs);//最右解左移
       if(fs > ls){
+	printf("update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, seqs, seqe, fs, ls);
 	tryFailed = true;
 	return false;
       }
@@ -450,6 +453,7 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
 	}
       }
       if(fs > ls){
+	printf("update black grid sequence(%d~%d, %d): limit=(%d, %d)\n", seqs, seqe, linei, fs, ls);
 	tryFailed = true;
 	return false;
       }
@@ -519,6 +523,7 @@ void Board::setRowLimitSolved(int linei, int limiti){
 void Board::fillGrid(int r, int c, int v){
   //printf("board fillgrid %d %d", r, c);
   if(r < 0 || c < 0 || r >= this->r || c >= this->c){
+    printf("fillgrid out of range\n");
     tryFailed = true;
     return;
   }
@@ -534,6 +539,7 @@ void Board::fillGrid(int r, int c, int v){
       printf("illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
       exit(2);
     }
+    printf("fill grid no the same value\n");
     tryFailed = true;
   }
 }
