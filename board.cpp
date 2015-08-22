@@ -120,6 +120,7 @@ void Board::initialFillCol(int ci){
   //changeNumQueue.push(LineChanged(COL, ci));
 }
 bool Board::doHeuristicInOneLine(){//TODO:Imporve
+  tryFailed = false;
     priority_queue<change, vector<change>, LineChanged> sortedChangedList;
     for(int i = 0;i < r; i++)
       if(!solved_row[i])
@@ -148,6 +149,8 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
       DEBUG_PRINT("update %d %d\n", ch.type, ch.index);
       if(updateByHeuristic(ch.type, ch.index))
 	isChange = true;
+      if(tryFailed)
+	return false;
       if(*mychange != 0)
 	sortedChangedList.push(LineChanged(ch.type, ch.index, *mychange));
     }

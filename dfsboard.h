@@ -34,6 +34,9 @@ class DFSBoard: public Board{
   bool FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart);
   bool tryUpdateByHeuristic(line_type type, int line);
   void RewindBoard(Board &b);
+  int getRowWithMinBranch(int nowr, vector<int>& rowOrder);
+
+  void BackupBoard(Board &b);
 };
 
 #endif
