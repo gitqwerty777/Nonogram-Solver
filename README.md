@@ -4,19 +4,40 @@ C++ program to solve nonogram by heuristic and DFS
 ## Build
 
 1. `make mode=release` can build program `heu`
-2. program built by `make mode=debug` can print detail message on each step(default when using `make`)
+2. `make mode=debug` will make program print detail message on each step(default mode)
 
 ## Input Format
 
-There are test input files `input1` to `input4`.
+- line 1: `[row] [column]`  
+- line 2 ~ r+1: row constraints with space seperated  
+- line r+2 ~ r+c+1: column constraints with space seperated  
+- if no constraint in a line, just put "0"
 
-## Algorithm ##
+There are some example test input files `input[num]`
 
-### Heuristic ###
+## Output Format
 
-Refer to the technique in [wiki](https://en.wikipedia.org/wiki/Nonogram).
+output answer with number format(1 = black, -1 = white, 0 = space) and graph format(unicode black and white blocks)
 
-### DFS ###
+## Run Program
 
-Not Complete Yet.
+```bash
+./heu < inputfile
+```
 
+## Algorithm
+
+- Heuristic
+  - Refer to techniques in [wiki](https://en.wikipedia.org/wiki/Nonogram)
+- DFS
+  - fill a line in each step
+- Hybrid
+  - Use heuristic method first, if it isn't solved, do DFS
+
+## Implementation
+
+- Heuristic
+  - update left-most and right-most possible grid of each constraint
+- DFS
+  - choose the line with minimum possible choices
+  - also fill other lines by heuristic as many as possible to decrease further searching time
