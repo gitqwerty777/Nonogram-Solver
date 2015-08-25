@@ -2,49 +2,36 @@
 #include "dfsboard.h"
 #define INF 2147483647
 
-//override
-/*
-  void DFSBoard::fillGrid(int r, int c, int v){
-  puts("dfsboard fillgrid");
-  b[r][c] = v;
-  }
-*/
-
-//Simple DFS
-void DFSBoard::DoSimpleDFS(){//without heuristic, only use DFS + backtrace search
+//Simple DFS, without heuristic
+void DFSBoard::DoSimpleDFS(){
   puts("dosimpleDFS");
   int nowr = 0;
   while(nowr <= r){
-    if(!FillRow(nowr)){  //try all possibilities to fill the row, will filling next answer after previous called
-      //all possibilities in row nowr are failed, recover board to previous row(nowr-1)
-      if(nowr == 0)
+    if(!tryFillRow(nowr)){//try all possibilities to fill the row, will filling next answer after previous called
+      if(nowr == 0)//all possibilities in row nowr are failed, recover board to previous row(nowr-1)
 	break;
       lastfillStart[nowr].clear();
       Rewind(--nowr);
     } else {// fill answer success, continue filling next row
       nowr++;
-      if(nowr == r)//complete, check column again
-	if(checkDFSAnswer())
+      if(nowr == r)//complete, check answer again
+	if(isDFSAnswerCorrect())
 	  return;
 	else
 	  Rewind(--nowr);
     }
   }
 }
-bool DFSBoard::checkDFSAnswer(){
+bool DFSBoard::isDFSAnswerCorrect(){
   for(int i = 0; i < c; i++){
-    vector<int> limit = getLimit_col(i);
-    //printf("get limit col = %d:", i);
-    //for(int k = 0; k < limit.size(); k++)
-    //printf("%d ", limit[k]);
-    //puts("");
-    if(limit.size() != lim_col[i].size())
+    vector<int> limitc = getLimitFromBoard_col(i);
+    if(limitc.size() != lim_col[i].size())
       return false;
     for(int j = 0; j < lim_col[i].size(); j++)
-      if(limit[j] != lim_col[i][j].l)
+      if(limitc[j] != lim_col[i][j].l)
 	return false;
   }
-  printBoard("check dfs answer complete!");
+  printBoard("find dfs answer!");
   return true;
 }
 
@@ -61,7 +48,7 @@ bool DFSBoard::getPreviousFillStart(vector<int>& fillStart, int nowr){
   }
   return true;
 }
-bool DFSBoard::FillRow(int nowr){//is vector copy by reference?
+bool DFSBoard::tryFillRow(int nowr){//is vector copy by reference?
   vector<int> fillStart;
   printf("fillRow%d\n", nowr);
   if(!getPreviousFillStart(fillStart, nowr))
@@ -70,10 +57,6 @@ bool DFSBoard::FillRow(int nowr){//is vector copy by reference?
   BackupBoard(original[nowr]);
   bool isSuccess = false;
   do{
-    printf("test (");
-    for(int i = 0; i < lim_row[nowr].size(); i++)
-      printf("%d, ", fillStart[i]);
-    printf(") at row %d\n", nowr);
     FillRowbyFillStart(nowr, fillStart);
     if(checkColumns()){//check available
       isSuccess = true;
@@ -89,37 +72,15 @@ bool DFSBoard::getNextFillStart(int nowr, vector<int>& fillStart){
   //(0, 2), (3, 4), (5, 6)
   //0, 3, 5 -> 1, 3, 5 -> 2, 3, 5 -> 0, 4, 5 -> 1, 4, 5 -> 2, 4, 5 -> 0, 3, 6 -> 1, 3, 6 ... -> 2, 4, 6 -> false
   int preblack = 0;
-  printf("getnext");
-  for(int j = 0; j < lim_row[nowr].size(); j++){
-  printf("(%d, %d) ", lim_row[nowr][j].fs, lim_row[nowr][j].ls);
-  }
-  puts("");
-  printf("nownext ");
-  for(int j = 0; j < lim_row[nowr].size(); j++){
-  printf("(%d) ", fillStart[j]);
-  }
-  puts("");
   while(i < lim_row[nowr].size()){
     i = 0;
     while(i < lim_row[nowr].size()){
       if(lim_row[nowr][i].ls > fillStart[i]){//add 1 and return
 	fillStart[i]++;
-	puts("trynext ");
-	for(int j = 0; j < lim_row[nowr].size(); j++){
-	  printf("(%d) ", fillStart[j]);
-	}
-	puts("");
-	printf("%s %s\n", (i != 0)?"yes":"no", (i != lim_row[nowr].size()?"yes":"no"));
 	if(((i != 0) && fillStart[i-1] + lim_row[nowr][i].l >= fillStart[i]) || ((i != lim_row[nowr].size()-1) && fillStart[i] + lim_row[nowr][i].l >= fillStart[i+1])){// two blocks cannot be connected, continue finding next ans
 	  puts("failed"); 
 	  break;
 	}
-	puts("success");
-	/*puts("real next: ");
-	for(int j = 0; j < lim_row[nowr].size(); j++){
-	  printf("(%d) ", fillStart[j]);
-	  }*/
-	puts("");
 	return true;
       } else {//fs ... ls ... fs
 	fillStart[i] = lim_row[nowr][i].fs;
@@ -155,7 +116,6 @@ bool DFSBoard::checkAvailableCol(int nowc){//not implement yet
 void DFSBoard::Rewind(int nowr){
   printf("rewind %d\n", nowr);
   RewindBoard(original[nowr]);
-  //printBoard("after rewind");
 }
 
 //DFS with heuristic
@@ -172,26 +132,24 @@ void DFSBoard::DoDFS(){
     puts("");
     if(isAllSolved())
       return;
-    if(!FillRowHeuristic(rowOrder[nowr])){  //try all possibilities to fill the row, will filling next answer after previous called
-      //all possibilities in row nowr are failed, recover board to previous row(nowr-1)
+    if(!tryFillRowHeuristic(rowOrder[nowr])){//try all possibilities to fill the row, will filling next answer after previous called
       if(nowr == 0){
-	puts("rewind to first row: no solution:");
+	puts("rewind to the first row: no solution:");
 	break;
       }
+      //all possibilities in row nowr are failed, recover board to previous row(nowr-1)
       lastfillStart[rowOrder[nowr]].clear();
       Rewind(rowOrder[--nowr]);
     } else {// fill answer success, continue filling next row
       rowOrder[++nowr] = getRowWithMinBranch(nowr, rowOrder);
       if(nowr == r)//complete, check column again
-	if(checkDFSAnswer())
+	if(isDFSAnswerCorrect())
 	  return;
 	else
 	  Rewind(rowOrder[--nowr]);
     }
   }
-  //if no answer, no_solution() and exit
 }
-
 int DFSBoard::getRowWithMinBranch(int nowr, vector<int>& rowOrder){
   int mini, minv = INF;
   for(int i = 0; i < r; i++){
@@ -211,8 +169,7 @@ int DFSBoard::getRowWithMinBranch(int nowr, vector<int>& rowOrder){
   }
   return mini;
 }
-
-bool DFSBoard::FillRowHeuristic(int nowr){//is vector copy by reference?
+bool DFSBoard::tryFillRowHeuristic(int nowr){
   vector<int> fillStart;
   printf("fillRow%d\n", nowr);
   if(!getPreviousFillStart(fillStart, nowr))
@@ -221,11 +178,7 @@ bool DFSBoard::FillRowHeuristic(int nowr){//is vector copy by reference?
   BackupBoard(original[nowr]);
   bool isSuccess = false;
   do{
-    printf("test (");
-    for(int i = 0; i < lim_row[nowr].size(); i++)
-      printf("%d, ", fillStart[i]);
-    printf(") at row %d\n", nowr);
-    if(FillRowbyFillStartHeuristic(nowr, fillStart)){//check available
+    if(tryFillRowbyFillStartHeuristic(nowr, fillStart)){//check available
       isSuccess = true;
     } else {
       printf("failed after applying heuristic, try next\n");
@@ -235,7 +188,7 @@ bool DFSBoard::FillRowHeuristic(int nowr){//is vector copy by reference?
   lastfillStart[nowr] = fillStart;
   return isSuccess;
 }
-bool DFSBoard::FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//or directly fill
+bool DFSBoard::tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//or directly fill
   int limitNum = lim_row[nowr].size();
   for(int i = 0; i < limitNum; i++)
     for(int j = fillStart[i]; j < fillStart[i]+lim_row[nowr][i].l; j++)
@@ -243,49 +196,20 @@ bool DFSBoard::FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//o
   for(int i = 0; i < c; i++)
     if(b[nowr][i] == SPACE)
       fillGrid(nowr, i, WHITE);
-  //printBoard("beforeFillRowbyFillStartHeuristic");
+
   tryFailed = false;
-  while(!isAllSolved() && !tryFailed){
+  while(!isAllSolved() && !tryFailed)
     if(!doHeuristicInOneLine())
       break;
-  }
-  /*tryFailed = false;
-  for(int i = 0; i < c; i++)
-    if(!updateByHeuristic(COL, i) || tryFailed){
-      tryFailed = true;
-      break;
-    }
-  */
-  if(tryFailed){
-    printf("tryfailed, rewind %d\n", nowr);
+  if(tryFailed){//find contradiction when updating heuristic
+    printf("try fill: failed, rewind %d\n", nowr);
     Rewind(nowr);
-    //printBoard("failFillRowbyFillStartHeuristic");
     return false;
   }
   puts("dfs with heursitic success");
-  //printBoard("FillRowbyFillStartHeuristic");
   return true;
 }
-bool DFSBoard::tryUpdateByHeuristic(line_type type, int line){//if there are no any hint can solve it
-  int originalSetnum = alreadySetGridNumber;
-  if(type == ROW){
-    fillRowByLimit(line);
-    updateLimitByLimit_row(line);
-    for(int j = 0; j < c; j++)
-      if(b[line][j] != SPACE)
-	updateRowLimits(Point(line,j), b[line][j]);
-    fill_blank_row(line);
-  } else {
-    fillColByLimit(line);
-    updateLimitByLimit_col(line);
-    for(int j = 0; j < r; j++){
-      if(b[j][line] != SPACE)
-	updateColLimits(Point(j, line), b[j][line]);
-    }
-    fill_blank_col(line);
-  }
-  return originalSetnum != alreadySetGridNumber;//is really updated or not
-}
+
 void DFSBoard::BackupBoard(Board &b){
   b.b = this->b;
   b.lim_row = this->lim_row;

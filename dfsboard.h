@@ -6,37 +6,37 @@
 class DFSBoard: public Board{
  public:
  DFSBoard(Board& b): Board(b){//inherit
-    printf("dfs board print board");
-    this->printBoard("dsfsfdfsdsf");
+    this->printBoard("before DFS");
     lastfillStart.resize(r);
     original.resize(r);
   }
 
   vector< vector<int> > lastfillStart;
   vector<Board> original;
-  
-  //simpledfs
-  //void fillGrid(int r, int c, int v);
-  bool checkDFSAnswer();
-  void DoSimpleDFS();
-  
-  bool FillRow(int);
+
+  void Rewind(int);
+  void BackupBoard(Board &b);
+  void RewindBoard(Board &b);
+
   bool getPreviousFillStart(vector<int>&, int);
   bool getNextFillStart(int, vector<int>&);
+  
+  //simple DFS
+  void DoSimpleDFS();
+  bool isDFSAnswerCorrect();
+  
+  bool tryFillRow(int);
   void FillRowbyFillStart(int, vector<int>&);
   
   bool checkColumns();
   bool checkAvailableCol(int);
-  void Rewind(int);
-  //dfs with heuristic
-  void DoDFS();
-  bool FillRowHeuristic(int);
-  bool FillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart);
-  bool tryUpdateByHeuristic(line_type type, int line);
-  void RewindBoard(Board &b);
-  int getRowWithMinBranch(int nowr, vector<int>& rowOrder);
 
-  void BackupBoard(Board &b);
+  //DFS with heuristic
+  void DoDFS();
+  int getRowWithMinBranch(int nowr, vector<int>& rowOrder);
+  
+  bool tryFillRowHeuristic(int);
+  bool tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart);
 };
 
 #endif

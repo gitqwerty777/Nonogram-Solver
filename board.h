@@ -8,6 +8,8 @@
 using namespace std;
 
 enum chessType{WHITE=2, BLACK=1, SPACE=0};
+enum line_type{ROW, COL};
+enum SOLVEMODE{HEURISTIC, DFS};
 
 struct Limit{
   int l;
@@ -29,17 +31,15 @@ struct Point{
   }
 };
 
-enum line_type{ROW, COL};
-
 class LineChanged{//TODO:
  public:
   line_type type;
-  int index;
+  int lineNum;
   int changeNum;
   LineChanged(){}
-  LineChanged(line_type tt, int i, int cn){
-    type = tt;
-    index = i;
+  LineChanged(line_type t, int i, int cn){
+    type = t;
+    lineNum = i;
     changeNum = cn;
   }
   bool operator()(const LineChanged& lc, const LineChanged& rc) const {
@@ -48,8 +48,6 @@ class LineChanged{//TODO:
 };
 
 typedef struct LineChanged change;
-
-enum SOLVEMODE{HEURISTIC, DFS};
 
 struct Board{
   Board(){}
@@ -66,20 +64,22 @@ struct Board{
   }
 
   int r, c;
-  bool tryFailed;
-  SOLVEMODE solveMode;
   vector< vector<int> > b;//board
   vector< vector<struct Limit> > lim_row, lim_col;
   vector<int> change_row, change_col;
+  //priority_queue<change, vector<change>, change> changeQueue; //TODO: implement
   vector<bool> solved_row, solved_col;
 
+  SOLVEMODE solveMode;
+  bool tryFailed;
   int solvedLineNum;
   int alreadySetGridNumber;
 
+  void solveGame();
+  
   void doHeuristic();
   bool doHeuristicInOneLine();
-  bool updateByHeuristic(line_type, int);
-  //update limit by heuristic
+  bool updateByHeuristic(line_type, int);  
   void updateRowLimits(struct Point p, int v);//fill a new block, find other block can be updated or not
   void updateColLimits(struct Point p, int v);
   bool updateLimitByGrid_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
@@ -100,24 +100,22 @@ struct Board{
   bool only_in_one_limit_col(int r, int c, int limiti);
   bool only_in_one_limit_row(int r, int c, int limiti);
   
-  void doDFS();
-
   //high-level functions related to limits
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
   void isLineSolved(line_type type, int line);
-  bool isAllSolved(){//allsolved
-    return (solvedLineNum == r + c)?true:false;
+  bool isAllSolved(){
+    return (solvedLineNum == r + c);
   }
-  void checkAnswer();
+  bool checkAnswer();//TODO: use getLimitFromBoard 
+  vector<int> getLimitFromBoard_col(int);
+  vector<int> getLimitFromBoard_row(int);
   
   void printBoard(const char[]);//for debug usage
   void no_solution(const char[]);
   void no_solution(const char[], line_type t, int i);
 
-  vector<int> getLimit_col(int);
-  vector<int> getLimit_row(int);
-  
+  void doDFS();
 };
 
 #endif
