@@ -6,7 +6,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <locale.h>
 #define INF 2147483647
+
 using namespace std;
 
 #ifdef __DEBUG__
@@ -16,10 +18,15 @@ using namespace std;
 #define DEBUG_PRINT(fmt, args...)    
 #endif
 
+#define saveAndExit(errorcode) {\
+  saveResult();\
+  isFailed = errorcode;\
+}
+ 
 inline void Board::no_solution(const char in[]){
   if(solveMode == HEURISTIC){
-    fprintf(stderr, "no solution: %s\n", in);
-    exit(1);
+    printf("no solution: %s\n", in);
+    saveAndExit(1);
   } else if(solveMode == DFS) {
     DEBUG_PRINT("no solution: %s\n", in);
     tryFailed = true;
@@ -28,8 +35,8 @@ inline void Board::no_solution(const char in[]){
 }
 inline void Board::no_solution(const char in[], line_type t, int i){//check answer failed
   if(solveMode == HEURISTIC){
-    fprintf(stderr, "wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
-    exit(5);
+    printf("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
+    saveAndExit(5);
   } else if (solveMode == DFS) {
     DEBUG_PRINT("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
     tryFailed = true;
@@ -43,6 +50,7 @@ void Board::solveGame(){
     printBoard("solved");
   else
     printBoard("failed to solve");
+  saveResult();
 }
 
 void Board::doHeuristic(){
@@ -56,6 +64,8 @@ void Board::doHeuristic(){
 
   //recursively do heuristic after no limit and grid to update
   while(!isAllSolved()){//TODO: change
+    if(isFailed)
+      return;
     if(!doHeuristicInOneLine())
       break;
   }
@@ -544,7 +554,7 @@ void Board::fillGrid(int r, int c, int v){
     if(solveMode == HEURISTIC){
       fprintf(stderr, "no solution: ");
       fprintf(stderr, "illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
-      exit(2);
+      saveAndExit(2);
     } else if(solveMode == DFS){
       DEBUG_PRINT("fill grid no the same value\n");
       tryFailed = true;    
@@ -695,7 +705,7 @@ void Board::printBoard(const char in[]){
       printf("%ls", boardchar[b[i][j]]);
     }
     printf("%ls", cl);
-    }
+  }
   //print all limits
   for(int i = 0; i < r; i++){
     printf("\nrow %d: ", i+1);
@@ -710,6 +720,67 @@ void Board::printBoard(const char in[]){
     }
   }
 }
+
+void Board::saveResult(){//the same as start of printBoard
+  setlocale(LC_ALL, "");
+  char *outputName;
+  asprintf(&outputName, "%s.out", name);
+  fprintf(stderr, "saveresult %s\n", outputName);
+  FILE* f = fopen(outputName, "w");
+  if(f == NULL){
+    fprintf(stderr, "cannot open file %s\n", outputName);
+    sleep(10);
+    saveAndExit(10);
+    return;
+  }
+  int maxlr = 0;
+  for(int i = 0; i < r; i++)
+    if(maxlr < lim_row[i].size())
+      maxlr = lim_row[i].size();
+  int maxl = maxlr * 3;
+  int maxlc = 0;
+  for(int i = 0; i < c; i++)
+    if(maxlc < lim_col[i].size())
+      maxlc = lim_col[i].size();
+  
+  for(int i = maxlc-1; i >= 0 ; i--){
+    fprintf(f, "%*s ", maxl, "");
+    for(int j = 0; j < c; j++)
+      if(lim_col[j].size() > maxlc-1-i)
+	fprintf(f, "%2d ", lim_col[j][maxlc-1-i].l);
+      else
+	fprintf(f, "   ");
+    fputs("\n", f);
+  }
+  fprintf(f, "%*s ", maxl, "");
+  for(int i = 0; i < c; i++)
+    fprintf(f, "---");
+  fputs("\n", f);
+  
+  for(int i = 0; i < r; i++){
+    for(int j = 0; j < maxlr; j++){
+      if(j < lim_row[i].size())
+	fprintf(f, "%2d ", lim_row[i][j].l);
+      else
+	fprintf(f, "   ");
+    }
+    fprintf(f, "|");
+    for(int j = 0; j < c; j++){
+      if(b[i][j] != SPACE)
+	fprintf(f, "%2d ", (b[i][j] == 1)?1:0);
+      else
+	fprintf(f, "   ");
+    }
+    fputs("\n", f);
+  }
+  for(int i = 0; i < r; i++){
+    for(int j = 0; j < c; j++){
+      fprintf(f, "%ls", boardchar[b[i][j]]);
+    }
+    fprintf(f, "%ls", cl);
+  }
+}
+
 bool Board::checkAnswer(){
   vector<int> seq;
   for(int i = 0; i < r; i++){
@@ -756,7 +827,7 @@ bool Board::checkAnswer(){
 }
 
 void Board::doDFS(){//TODO: implement, do multiple answer
-  if(isAllSolved())//if heuristic can't update anymore, do DFS
+  if(isAllSolved() || isFailed)//if heuristic can't update anymore, do DFS
     return;
   solveMode = DFS;
   DFSBoard dfsboard(*this);

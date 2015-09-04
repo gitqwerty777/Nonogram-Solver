@@ -7,20 +7,50 @@
 #include <time.h>
 #include <unistd.h>
 #include "board.h"
+
 using namespace std;
 
-/*
-input format: 
-line 1: row column(with space seperated)
-line 2 ~ r+1: row constraints(with space seperated)
-line r+2 ~ r+c+1: column constraint(with space seperated)
-if no constraint, just put "0"
-output:
-with number (1 = black, -1 = white, 0 = space) and graph and some debug information
-*/
-
 int r, c;
+char *problemName = NULL;
 vector< vector<struct Limit> > lim_row, lim_col;
+
+void parseArgument(int argc, char** argv){
+  // use getopt to get arg: http://wen00072-blog.logdown.com/posts/171197-using-getopt-parse-command-line-parameter
+  while(1){
+    int cmd_opt = getopt(argc, argv, "f:");
+    /* End condition always first */
+    if (cmd_opt == -1) {
+      break;
+    }
+    /* Print option when it is valid */
+    if (cmd_opt != '?') {
+      fprintf(stderr, "option:-%c\n", cmd_opt);
+    }
+    /* Lets parse */
+    switch (cmd_opt) {
+    case 'f':
+      if (optarg) 
+	asprintf(&problemName, "%s", optarg);
+      break;
+      /* Error handle: Mainly missing arg or illegal option */
+    case '?':
+      fprintf(stderr, "Illegal option\n");
+      break;
+    default:
+      fprintf(stderr, "Not supported option\n");
+      break;
+    }
+  }
+  /* additional args */
+  if (argc > optind) {
+    int i = 0;
+    for (i = optind; i < argc; i++)
+      fprintf(stderr, "argv[%d] = %s\n", i, argv[i]);
+  }
+  if(problemName == NULL)
+    asprintf(&problemName, "result");
+}
+
 void readInputLimit(){
   char in[10000];//big enough
   scanf("%d %d", &r, &c);
@@ -46,17 +76,18 @@ void readInputLimit(){
   }
 }
 
-int main(){
+int main(int argc, char** argv){
   setlocale(LC_ALL, "");
+  parseArgument(argc, argv);
   clock_t beginTime = clock();
   readInputLimit();
-  struct Board board(r, c, lim_row, lim_col);
+  struct Board board(r, c, lim_row, lim_col, problemName);
   board.doHeuristic();
   board.doDFS();
   board.checkAnswer();
   board.printBoard("after solved");
+  board.saveResult();
   clock_t endTime = clock();
   printf("time spent: %lf\n", (double(endTime) - double(beginTime)) / CLOCKS_PER_SEC);
   return 0;
 }
-

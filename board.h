@@ -51,7 +51,7 @@ typedef struct LineChanged change;
 
 struct Board{
   Board(){}
-  Board(int rr, int cc, vector< vector<struct Limit> >& lr, vector< vector<struct Limit> >& lc){
+  Board(int rr, int cc, vector< vector<struct Limit> >& lr, vector< vector<struct Limit> >& lc, char* n = NULL){
     r = rr;  c = cc;
     lim_row = lr; lim_col = lc;
     b.resize(r);
@@ -61,9 +61,16 @@ struct Board{
     alreadySetGridNumber = 0;
     change_row.resize(r); change_col.resize(c);
     solved_row.resize(r); solved_col.resize(c);
+    if(name == NULL)
+      asprintf(&name, "nonogram");
+    else
+      name = n;
+    isFailed = 0;
   }
 
   int r, c;
+  char* name;
+  int isFailed;
   vector< vector<int> > b;//board
   vector< vector<struct Limit> > lim_row, lim_col;
   vector<int> change_row, change_col;
@@ -111,7 +118,8 @@ struct Board{
   vector<int> getLimitFromBoard_col(int);
   vector<int> getLimitFromBoard_row(int);
   
-  void printBoard(const char[]);//for debug usage
+  void printBoard(const char[]);
+  void saveResult();
   void no_solution(const char[]);
   void no_solution(const char[], line_type t, int i);
 
