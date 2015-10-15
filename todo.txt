@@ -1,0 +1,36 @@
+WBS
+schedule 10/15~11/21
+
+1. implementation
+   1. make independent scanner
+      1. make scanner interface 10/21
+      1. test by original data 10/22
+   2. make independent printer
+      1. make printer interface 10/28
+      1. test by original data 10/29
+   3. misc
+      1. record solve time
+2. test
+   1. test problems by datagen.py 
+      1. if there's wrong problem, record and analyze 11/5
+   2. test speed
+      1. calculate worse case and record it 11/5
+3. optimization 
+   1. refactor 10/15~10/30(simple), 11/5~11/21(combine 2., 3.)
+   2. optimize heuristic 11/5~11/21
+   3. optimize dfs 11/5~11/21
+4. analyze
+   1. nonogram papaers 10/15~10/30
+
+Requirement:
+1. High problem solved rate
+2. Little problem solved time
+3. requirements of the rules
+  2. input/output 格式
+   - 每一題的題號之前都有一個 $，下一行開始就是題目/答案
+   - 以 25x25 舉例，每題有 50 行提示，前 25 行提示是上方區塊由上往下的提示，後 25 行的提示是左方區塊由左到右的提示
+   - 答案以 25x25 的矩陣表示，0 的地方代表沒有塗黑，1 代表有塗黑, 以 TAB 隔開
+  3. misc
+   - 解題時要依照順序解，不可以跳過
+   - 如果題目有多解，只要找出其中一組解即可
+   - 程式必須要記錄自己的整體解題時間 
