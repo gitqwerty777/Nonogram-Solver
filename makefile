@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-g -pg -fno-omit-frame-pointer
+CXXFLAGS=-g -pg -fno-omit-frame-pointer -O3
 
 ifeq ($(mode),release) #if mode variable is empty, setting debug build mode
 	mode=release
