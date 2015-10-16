@@ -7,7 +7,8 @@
 #include <time.h>
 #include <unistd.h>
 #include "board.h"
-#include "nonograminputReader.h"
+#include "nonogramReader.h"
+#include "nonogramWriter.h"
 
 using namespace std;
 
@@ -87,8 +88,7 @@ int main(int argc, char** argv){
 
   struct Board board;
   NonogramInputReader ir(stdin);  //new reader
-  ir.readInputLimit();
-  ir.getBoard(&board, problemName);
+  ir.readInputAndGetBoard(&board, problemName);
   
   board.doHeuristic();
   board.doDFS();
