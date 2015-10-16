@@ -7,6 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "board.h"
+#include "nonograminputReader.h"
 
 using namespace std;
 
@@ -15,6 +16,7 @@ char *problemName = NULL;
 vector< vector<struct Limit> > lim_row, lim_col;
 
 void parseArgument(int argc, char** argv){
+  
   // use getopt to get arg: http://wen00072-blog.logdown.com/posts/171197-using-getopt-parse-command-line-parameter
   while(1){
     int cmd_opt = getopt(argc, argv, "f:");
@@ -23,14 +25,16 @@ void parseArgument(int argc, char** argv){
       break;
     }
     /* Print option when it is valid */
-    if (cmd_opt != '?') {
+    /*if (cmd_opt != '?') {
       fprintf(stderr, "option:-%c\n", cmd_opt);
-    }
+      }*/
     /* Lets parse */
     switch (cmd_opt) {
     case 'f':
-      if (optarg) 
+      if (optarg){
 	asprintf(&problemName, "%s", optarg);
+	printf("use %s as saved file\n", problemName);
+      }
       break;
       /* Error handle: Mainly missing arg or illegal option */
     case '?':
@@ -80,8 +84,12 @@ int main(int argc, char** argv){
   setlocale(LC_ALL, "");
   parseArgument(argc, argv);
   clock_t beginTime = clock();
-  readInputLimit();
-  struct Board board(r, c, lim_row, lim_col, problemName);
+
+  struct Board board;
+  NonogramInputReader ir(stdin);  //new reader
+  ir.readInputLimit();
+  ir.getBoard(&board, problemName);
+  
   board.doHeuristic();
   board.doDFS();
   board.checkAnswer();
