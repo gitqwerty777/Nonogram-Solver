@@ -151,7 +151,9 @@ void DFSBoard::DoDFS(){
   }
 }
 int DFSBoard::getRowWithMinBranch(int nowr, vector<int>& rowOrder){
-  int mini, minv = INF;
+  int mini;
+  long minv = INF;
+  bool first = true;
   for(int i = 0; i < r; i++){
     bool used = false;
     for(int j = 0; j < nowr; j++)
@@ -159,12 +161,13 @@ int DFSBoard::getRowWithMinBranch(int nowr, vector<int>& rowOrder){
 	used = true;
     if(used)
       continue;
-    int v = 1;
+    long v = 1;
     for(int j = 0; j < lim_row[i].size(); j++)
       v *= lim_row[i][j].ls-lim_row[i][j].fs;
-    if(v < minv){
+    if(v < minv || first){
       minv = v;
       mini = i;
+      first = false;
     }
   }
   return mini;

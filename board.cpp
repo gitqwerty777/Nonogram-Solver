@@ -171,8 +171,9 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
     DEBUG_PRINT("update %s %d\n", (ch.type==ROW)?"ROW":"COL", ch.lineNum);
     if(updateByHeuristic(ch.type, ch.lineNum))
       isChange = true;
-    if(tryFailed)
+    if(tryFailed){
       return false;
+    }
     if(*mychange != 0)
       changeQueue.push(change(ch.type, ch.lineNum, *mychange));
   }
@@ -702,12 +703,12 @@ void Board::printBoard(const char in[]){
     }
     puts("");
   }
-  for(int i = 0; i < r; i++){
+  /*for(int i = 0; i < r; i++){
     for(int j = 0; j < c; j++){
       printf("%ls", boardchar[b[i][j]]);
     }
     printf("%ls", cl);
-  }
+    }*/
   //print all limits
   for(int i = 0; i < r; i++){
     printf("\nrow %d: ", i+1);
