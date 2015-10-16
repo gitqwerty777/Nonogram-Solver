@@ -7,7 +7,7 @@ do
     ../heu -f test$i < input$i > out
     diff test$i.out input$i.out > compare
     if [[ -s compare ]] ; then
-	echo "test inputn$i wrong"
+	echo "test input$i wrong"
     else
 	echo "test input$i correct"
 	((correctnum += 1))

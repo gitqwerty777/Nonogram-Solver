@@ -18,9 +18,11 @@ using namespace std;
 #define DEBUG_PRINT(fmt, args...)    
 #endif
 
+//TODO: ???WHAT IS THIS?
 #define saveAndExit(errorcode) {\
   saveResult();\
   isFailed = errorcode;\
+  exit(isFailed);      \
 }
  
 inline void Board::no_solution(const char in[]){
@@ -65,7 +67,7 @@ void Board::doHeuristic(){
   //recursively do heuristic after no limit and grid to update
   while(!isAllSolved()){//TODO: change
     if(isFailed)
-      return;
+      exit(isFailed);
     if(!doHeuristicInOneLine())
       break;
   }
@@ -832,7 +834,7 @@ void Board::doDFS(){//TODO: implement, do multiple answer
   solveMode = DFS;
   DFSBoard dfsboard(*this);
   dfsboard.DoDFS();
-  //dfsboard.DoSimpleDFS();
+
   b = dfsboard.b;
 }
 
