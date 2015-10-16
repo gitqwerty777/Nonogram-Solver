@@ -20,7 +20,7 @@ heu: nonoheu.o dfsboard.o board.o
 test: heu
 	sh runtest.sh # if not passed the test, return error
 
-nonoheu.o: nonoheu.cpp dfsboard.h board.h nonograminputReader.h
+nonoheu.o: nonoheu.cpp dfsboard.h board.h nonogramReader.h
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c
 board.o: board.cpp board.h dfsboard.h
 	$(CXX) $(CXXFLAGS) board.cpp -c
