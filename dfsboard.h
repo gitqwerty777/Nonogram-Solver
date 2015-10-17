@@ -37,6 +37,8 @@ class DFSBoard: public Board{
   
   bool tryFillRowHeuristic(int);
   bool tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart);
+
+  bool isRowLegal(vector<int>& fillStart, int nowr);
 };
 
 #endif

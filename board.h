@@ -47,7 +47,7 @@ class LineChanged{//TODO:
   }
 };
 
-typedef struct LineChanged change;
+typedef LineChanged change;
 
 struct Board{
   Board(){}
@@ -86,7 +86,7 @@ struct Board{
 
   int r, c;
   char* name;
-  int isFailed;
+  int isFailed;//TODO: delete?
   vector< vector<int> > b;//board
   vector< vector<struct Limit> > lim_row, lim_col;
   vector<int> change_row, change_col;
@@ -95,6 +95,7 @@ struct Board{
 
   SOLVEMODE solveMode;
   bool tryFailed;
+  char* tryFailedReason;
   int solvedLineNum;
   int alreadySetGridNumber;
 

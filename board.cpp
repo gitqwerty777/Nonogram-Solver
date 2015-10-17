@@ -15,7 +15,7 @@ using namespace std;
 #define DEBUG_PRINT(fmt, args...)  \
   fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, __LINE__, __FUNCTION__, ##args)
 #else /* Don't do anything in non-debug builds */
-#define DEBUG_PRINT(fmt, args...)    
+#define DEBUG_PRINT(fmt, args...)
 #endif
 
 //TODO: ???WHAT IS THIS?
@@ -31,6 +31,9 @@ inline void Board::no_solution(const char in[]){
     saveAndExit(1);
   } else if(solveMode == DFS) {
     DEBUG_PRINT("no solution: %s\n", in);
+    char* s;
+    asprintf(&s, "%s\n", in);
+    tryFailedReason = s;
     tryFailed = true;
     //failed in dfs searching TODO:
   }
@@ -41,6 +44,9 @@ inline void Board::no_solution(const char in[], line_type t, int i){//check answ
     saveAndExit(5);
   } else if (solveMode == DFS) {
     DEBUG_PRINT("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
+    char* s;
+    asprintf(&s, "%s", in);
+    tryFailedReason = s;
     tryFailed = true;
   }
 }
@@ -141,7 +147,7 @@ void Board::initialFillCol(int ci){
   //changeNumQueue.push(change(COL, ci));
 }
 bool Board::doHeuristicInOneLine(){//TODO:Imporve
-  tryFailed = false; // why this is needed
+  tryFailed = false; // TODO: why this is needed...
   priority_queue<change, vector<change>, change> changeQueue;
   for(int i = 0;i < r; i++)
     if(!solved_row[i])
@@ -156,12 +162,6 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
   while(!changeQueue.empty()){
     change ch = changeQueue.top();
     changeQueue.pop();
-    /*if(!isChange && previousChangeNum != ch.changeNum){
-      break;
-      } else {
-      previousChangeNum = ch.changeNum;
-      }
-      isChange = false;*/
     int *mychange;
     if(ch.type == ROW)
       mychange = &change_row[ch.lineNum];
@@ -179,6 +179,7 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
   }
   if(!isChange && maxChangeNum == 0){
     DEBUG_PRINT("NO HEURISTIC ANSWER\n");
+    printf("no heursitic answer\n");
     return false;
   }
   return true;
@@ -381,6 +382,10 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
       ls = min(ls, seqs);//最右解左移
       if(fs > ls){
 	DEBUG_PRINT("update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, seqs, seqe, fs, ls);
+	char* s;
+	asprintf(&s, "fs > ls at row %d limit %d fs %d ls %d, update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, limiti, fs, ls, linei, seqs, seqe, fs, ls);
+	printBoard("fs >ls");
+	tryFailedReason = s;
 	tryFailed = true;
 	return false;
       }
@@ -475,6 +480,9 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
       }
       if(fs > ls){
 	DEBUG_PRINT("update black grid sequence(%d~%d, %d): limit=(%d, %d)\n", seqs, seqe, linei, fs, ls);
+	char* s;
+	asprintf(&s, "fs > ls at col %d", linei);
+	tryFailedReason = s;
 	tryFailed = true;
 	return false;
       }
@@ -544,6 +552,9 @@ void Board::setRowLimitSolved(int linei, int limiti){
 void Board::fillGrid(int r, int c, int v){
   if(r < 0 || c < 0 || r >= this->r || c >= this->c){
     DEBUG_PRINT("fillgrid out of range\n");
+    char* s;
+    asprintf(&s, "fillgrid out of range");
+    tryFailedReason = s;
     tryFailed = true;
     return;
   }
@@ -560,6 +571,9 @@ void Board::fillGrid(int r, int c, int v){
       saveAndExit(2);
     } else if(solveMode == DFS){
       DEBUG_PRINT("fill grid no the same value\n");
+      char* s;
+      asprintf(&s, "fill twice");
+      tryFailedReason = s;
       tryFailed = true;    
     }
   }
