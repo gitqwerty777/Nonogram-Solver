@@ -188,9 +188,9 @@ bool Board::updateByHeuristic(line_type type, int line){//if there are no any hi
   int originalSetnum = alreadySetGridNumber;
   if(type == ROW){
     DEBUG_PRINT("updateHeuristic: row%d\n", line);
-    fillRowByLimit(line);
-    updateLimitByLimit_row(line);
-    for(int j = 0; j < c; j++){
+    fillRowByLimit(line);//limits are updated by others, need to fillgrid
+    updateLimitByLimit_row(line);//
+    for(int j = 0; j < c; j++){//TODO: optimize
       if(b[line][j] != SPACE)
 	updateRowLimits(Point(line,j), b[line][j]);
     }
@@ -237,7 +237,19 @@ void Board::fillColByLimit(int c){
 
 bool Board::updateLimitByLimit_row(int nowr){
   int nfs, nls;
-  for(int i = 1; i < lim_row[nowr].size(); i++){
+  if(!lim_row[nowr][0].isSolved()){//i = 0
+    nfs = lim_row[nowr][0].fs;
+    if(1 < lim_row[nowr].size()){
+      nls = min(lim_row[nowr][1].ls-1-lim_row[nowr][0].l , lim_row[nowr][0].ls);
+    } else {
+      nls = lim_row[nowr][0].ls;
+    }
+    lim_row[nowr][0].set_pos(nfs, nls);
+    if(lim_row[nowr][0].isSolved()){
+      setRowLimitSolved(nowr, 0);
+    }
+  }
+  for(int i = 1; i < lim_row[nowr].size(); i++){//TODO: no zero?...
     if(lim_row[nowr][i].isSolved()){
       continue;
     }
@@ -253,8 +265,20 @@ bool Board::updateLimitByLimit_row(int nowr){
     }
   }
 }
-bool Board::updateLimitByLimit_col(int nowc){
+bool Board::updateLimitByLimit_col(int nowc){//TODO: no zero?...
   int nfs, nls;
+  if(lim_col[nowc][0].isSolved()){//TODO:too many duplicate...
+    nfs = lim_col[nowc][0].fs;
+    if(1 < lim_col[nowc].size()){
+      nls = min(lim_col[nowc][1].ls-1-lim_col[nowc][0].l , lim_col[nowc][0].ls);
+    } else {
+      nls = lim_col[nowc][0].ls;
+    }
+    lim_col[nowc][0].set_pos(nfs, nls);
+    if(lim_col[nowc][0].isSolved()){
+      setColLimitSolved(nowc, 0);
+    }
+  }
   for(int i = 1; i < lim_col[nowc].size(); i++){
     if(lim_col[nowc][i].isSolved()){
       continue;
