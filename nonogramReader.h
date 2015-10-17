@@ -52,7 +52,7 @@ class NonogramInputReader{
 
   void readInput_Tourament(){
     char in[10000];//I think it's big enough
-    r = 25; c = 25;
+    r = 15; c = 15;
     int questionNum;
     fscanf(f, "$%d", &questionNum);
     lim_row.clear(); lim_col.clear();
