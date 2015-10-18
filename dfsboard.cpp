@@ -24,10 +24,10 @@ void DFSBoard::DoSimpleDFS(){//Simple DFS, without heuristic, not used
 bool DFSBoard::tryFillRow(int nowr){//is vector copy by reference?
   vector<int> fillStart;
   printf("fillRow%d\n", nowr);
-  if(!getPreviousFillStart(fillStart, nowr))
+  if(!getNextLegalFillStart(fillStart, nowr))
     return false;
 
-  BackupBoard(original[nowr]);
+  BackupBoard(backupBoards[nowr]);
   bool isSuccess = false;
   do{
     FillRowbyFillStart(nowr, fillStart);
@@ -40,7 +40,7 @@ bool DFSBoard::tryFillRow(int nowr){//is vector copy by reference?
   return isSuccess;
 }
 
-bool DFSBoard::getPreviousFillStart(vector<int>& fillStart, int nowr){//TODO: rename to getnext...
+bool DFSBoard::getNextLegalFillStart(vector<int>& fillStart, int nowr){//TODO: rename to getnext...
   if(lastfillStart[nowr].size() == 0){//this row is not tried yet, return original fs
     fillStart.resize(lim_row[nowr].size());
     for(int i = 0; i < lim_row[nowr].size(); i++){
@@ -128,7 +128,7 @@ bool DFSBoard::checkAvailableCol(int nowc){//not implement yet
 }
 void DFSBoard::Rewind(int nowr){
   printf("rewind %d\n", nowr);
-  RewindBoard(original[nowr]);
+  RewindBoard(backupBoards[nowr]);
 }
 
 void printVector(char* s){
@@ -150,7 +150,7 @@ void DFSBoard::DoDFS(){
     puts("");
     if(isAllSolved())
       return;
-    if(!tryFillRowHeuristic(rowOrder[rowCount])){//try all possibilities to fill the row, will filling next answer after previous called
+    if(!tryFillRowWithHeuristic(rowOrder[rowCount])){//try all possibilities to fill the row, will filling next answer after previous called
       if(rowCount == 0){
 	puts("rewind to the first row: no solution:");
 	break;
@@ -194,13 +194,13 @@ int DFSBoard::getRowWithMinBranch(int rowCount, vector<int>& rowOrder){
   }
   return mini;
 }
-bool DFSBoard::tryFillRowHeuristic(int nowr){
+bool DFSBoard::tryFillRowWithHeuristic(int nowr){
   vector<int> fillStart;
   printf("fillRow%d\n", nowr);
-  if(!getPreviousFillStart(fillStart, nowr))
+  if(!getNextLegalFillStart(fillStart, nowr))
     return false;
 
-  BackupBoard(original[nowr]);
+  BackupBoard(backupBoards[nowr]);
   bool isSuccess = false;
   do{
     if(tryFillRowbyFillStartHeuristic(nowr, fillStart)){//check available
