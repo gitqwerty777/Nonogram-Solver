@@ -131,53 +131,61 @@ void DFSBoard::Rewind(int nowr){
   RewindBoard(original[nowr]);
 }
 
+void printVector(char* s){
+  
+}
+
 //DFS with heuristic
 void DFSBoard::DoDFS(){
-  //TODO: choose an answer of the line with minimum possible answer() -> use heuristic to fill board -> check other is legal or not -> if legal, next line
-  //now : only choose row
+  //choose an answer of the line with minimum possible answer() -> use heuristic to fill board -> check other is legal or not -> if legal, next line; else, refill the current line
+  //TODO: only choose row
   puts("doDFS");
   vector<int> rowOrder(r);
-  int nowr = 0;
-  rowOrder[nowr] = getRowWithMinBranch(nowr, rowOrder);
-  while(nowr <= r){
+  int rowCount = 0;
+  rowOrder[rowCount] = getRowWithMinBranch(rowCount, rowOrder);
+  while(rowCount <= r){
     puts("nowroworder");
-    for(int i = 0; i <= nowr; i++)
+    for(int i = 0; i <= rowCount; i++)
       printf("%d ", rowOrder[i]);
     puts("");
     if(isAllSolved())
       return;
-    if(!tryFillRowHeuristic(rowOrder[nowr])){//try all possibilities to fill the row, will filling next answer after previous called
-      if(nowr == 0){
+    if(!tryFillRowHeuristic(rowOrder[rowCount])){//try all possibilities to fill the row, will filling next answer after previous called
+      if(rowCount == 0){
 	puts("rewind to the first row: no solution:");
 	break;
       }
       //all possibilities in row nowr are failed, recover board to previous row(nowr-1)
-      lastfillStart[rowOrder[nowr]].clear();
-      Rewind(rowOrder[--nowr]);
+      lastfillStart[rowOrder[rowCount]].clear();
+      Rewind(rowOrder[--rowCount]);
     } else {// fill answer success, continue filling next row
-      rowOrder[++nowr] = getRowWithMinBranch(nowr, rowOrder);
-      if(nowr == r)//complete, check column again
+      rowOrder[++rowCount] = getRowWithMinBranch(rowCount, rowOrder);
+      if(rowCount == r)//complete, check column again
 	if(isDFSAnswerCorrect())
 	  return;
 	else
-	  Rewind(rowOrder[--nowr]);
+	  Rewind(rowOrder[--rowCount]);
     }
   }
+  if(!isDFSAnswerCorrect()){
+    fprintf(stderr, "no solution: dfs failed\n");
+  }
 }
-int DFSBoard::getRowWithMinBranch(int nowr, vector<int>& rowOrder){
+int DFSBoard::getRowWithMinBranch(int rowCount, vector<int>& rowOrder){
   int mini;
   long minv = INF;
   bool first = true;
   for(int i = 0; i < r; i++){
     bool used = false;
-    for(int j = 0; j < nowr; j++)
+    for(int j = 0; j < rowCount; j++)
       if(i == rowOrder[j])
 	used = true;
     if(used)
       continue;
     long v = 1;
     for(int j = 0; j < lim_row[i].size(); j++)
-      v *= lim_row[i][j].ls-lim_row[i][j].fs;
+      if(!lim_row[i][j].isSolved())
+	v *= lim_row[i][j].ls-lim_row[i][j].fs;
     if(v < minv || first){
       minv = v;
       mini = i;
