@@ -8,17 +8,17 @@ class DFSBoard: public Board{
  DFSBoard(Board& b): Board(b){//inherit
     this->printBoard("before DFS");
     lastfillStart.resize(r);
-    original.resize(r);
+    backupBoards.resize(r);
   }
 
   vector< vector<int> > lastfillStart;
-  vector<Board> original;
+  vector<Board> backupBoards;
 
   void Rewind(int);
   void BackupBoard(Board &b);
   void RewindBoard(Board &b);
 
-  bool getPreviousFillStart(vector<int>&, int);
+  bool getNextLegalFillStart(vector<int>&, int);
   bool getNextFillStart(int, vector<int>&);
   
   //simple DFS
@@ -35,7 +35,7 @@ class DFSBoard: public Board{
   void DoDFS();
   int getRowWithMinBranch(int nowr, vector<int>& rowOrder);
   
-  bool tryFillRowHeuristic(int);
+  bool tryFillRowWithHeuristic(int);
   bool tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart);
 
   bool isRowLegal(vector<int>& fillStart, int nowr);
