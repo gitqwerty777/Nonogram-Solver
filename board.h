@@ -55,6 +55,7 @@ struct Board{
     init(rr, cc, lr, lc, n);
   }
   void init(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
+    isLimitInit = false;
     r = rr;  c = cc;
     lim_row = lr; lim_col = lc;
     b.resize(r);
@@ -86,6 +87,7 @@ struct Board{
   int r, c;
   char* name;
   int isFailed;//TODO: delete?
+  bool isLimitInit;
   vector< vector<int> > b;//board
   vector< vector<struct Limit> > lim_row, lim_col;
   vector<int> change_row, change_col;
