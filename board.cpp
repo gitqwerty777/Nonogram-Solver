@@ -371,8 +371,7 @@ void Board::fill_blank_col(int nowc){
 
 }
 
-void Board::updateRowLimits(struct Point p, int v){
-  //DEBUG_PRINT("updatelimit_row(%d, %d)\n", p.r, p.c);
+void Board::updateRowLimits(struct Point p, int v){//if point only in one limit, update limit by it
   for(int j = 0; j < lim_row[p.r].size(); j++)
     if(in_limit_row(p.r, j, p.c))
       updateLimitByGrid_row(p.r, j, p.c);
@@ -380,27 +379,19 @@ void Board::updateRowLimits(struct Point p, int v){
 bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
   int fs = lim_row[linei][limiti].fs;
   int ls = lim_row[linei][limiti].ls;
-  lim_row[linei][limiti].set_pos(fs, ls);
+  lim_row[linei][limiti].set_pos(fs, ls);//TODO: ???
   int fe = lim_row[linei][limiti].fe;
   int le = lim_row[linei][limiti].le;
   int l = lim_row[linei][limiti].l;
   int v = b[linei][i];
-  if(v == BLACK){
-    //find sequences
+  if(v == BLACK){//find sequences
     if(only_in_one_limit_row(linei, i, limiti)){
       int seqs = i, seqe = i;
-      while(seqs >= 0 && b[linei][seqs] == BLACK){
+      while(seqs-1 >= 0 && b[linei][seqs-1] == BLACK){
 	seqs--;
       }
-      while(seqe < c && b[linei][seqe] == BLACK){
+      while(seqe+1 < c && b[linei][seqe+1] == BLACK){
 	seqe++;
-      }
-      //seqs and seqe are black
-      if(seqs < 0 || b[linei][seqs] != BLACK){
-	seqs++;
-      }
-      if(seqe >= c || b[linei][seqe] != BLACK){
-	seqe--;
       }
       fs = max(fs, seqe-l+1);//最左解右移
       ls = min(ls, seqs);//最右解左移
@@ -417,7 +408,7 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
     }
   } else {//white
     while(fs <= ls){
-      bool update = false;
+      bool update = false;//TODO: change
       if(fs <= i && fe >= i){
 	fs++; fe++; update = true;}
       if(ls <= i && le >= i){
@@ -432,6 +423,7 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
       return false;
     }
   }
+  //complete, fill the information back
   if(lim_row[linei][limiti].fs != fs || lim_row[linei][limiti].ls != ls){
     DEBUG_PRINT("(%d, %d) = %d lim_row[%d][%d]: (%d, %d)", linei, i, b[linei][i], linei, limiti,   lim_row[linei][limiti].fs,   lim_row[linei][limiti].ls);
     DEBUG_PRINT("-> (%d, %d)\n", fs, ls);
@@ -446,7 +438,7 @@ bool Board::in_limit_row(int nowr, int limiti, int nowc){
   return (lim_row[nowr][limiti].fs <= nowc && lim_row[nowr][limiti].le >= nowc);  
 }
 bool Board::only_in_one_limit_row(int nowr, int nowc, int limiti){
-  return (limiti == 0 || !in_limit_row(nowr, limiti-1, nowc)) && (in_limit_row(nowr, limiti, nowc)) && (limiti == lim_row[nowr].size()-1 || !in_limit_row(nowr, limiti+1, nowc));
+  return ((limiti == 0) || !in_limit_row(nowr, limiti-1, nowc)) && (in_limit_row(nowr, limiti, nowc)) && ((limiti == lim_row[nowr].size()-1) || !in_limit_row(nowr, limiti+1, nowc));
 }
 void Board::updateColLimits(struct Point p, int v){
   //DEBUG_PRINT("updatelimit_col(%d, %d)\n", p.r, p.c);
@@ -543,7 +535,7 @@ bool Board::in_limit_col(int nowc, int limiti, int nowr){
   return (lim_col[nowc][limiti].fs <= nowr && lim_col[nowc][limiti].le >= nowr);  
 }
 bool Board::only_in_one_limit_col(int nowr, int nowc, int limiti){
-  return (limiti == 0 || !in_limit_col(nowc, limiti-1, nowr)) && (in_limit_col(nowc, limiti, nowr)) && (limiti == lim_col[nowc].size()-1 || !in_limit_col(nowc, limiti+1, nowr));
+  return ((limiti == 0) || !in_limit_col(nowc, limiti-1, nowr)) && (in_limit_col(nowc, limiti, nowr)) && ((limiti == lim_col[nowc].size()-1) || !in_limit_col(nowc, limiti+1, nowr));
 }
 
 void Board::setColLimitSolved(int linei, int limiti){
@@ -576,8 +568,7 @@ void Board::setRowLimitSolved(int linei, int limiti){
 void Board::fillGrid(int r, int c, int v){
   if(r < 0 || c < 0 || r >= this->r || c >= this->c){
     DEBUG_PRINT("fillgrid out of range\n");
-    char* s;
-    asprintf(&s, "fillgrid out of range");
+    char* s;  asprintf(&s, "fillgrid out of range");
     tryFailedReason = s;
     tryFailed = true;
     return;
@@ -588,6 +579,7 @@ void Board::fillGrid(int r, int c, int v){
     change_col[c]++;
     b[r][c] = v;
     alreadySetGridNumber++;
+
   } else if(b[r][c] != v){
     if(solveMode == HEURISTIC){
       fprintf(stderr, "no solution: ");

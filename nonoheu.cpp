@@ -12,32 +12,36 @@
 
 using namespace std;
 
-int r, c;
 char *problemName = NULL;
-vector< vector<struct Limit> > lim_row, lim_col;
+int problemNum = 1;
 
 void parseArgument(int argc, char** argv){
-  
   // use getopt to get arg: http://wen00072-blog.logdown.com/posts/171197-using-getopt-parse-command-line-parameter
   while(1){
-    int cmd_opt = getopt(argc, argv, "f:");
-    /* End condition always first */
-    if (cmd_opt == -1) {
+    int cmd_opt = getopt(argc, argv, "n:f:");
+    if (cmd_opt == -1) {    /* End condition always first */
       break;
     }
-    /* Print option when it is valid */
-    /*if (cmd_opt != '?') {
+    if (cmd_opt != '?') {    /* Print option when it is valid */
       fprintf(stderr, "option:-%c\n", cmd_opt);
-      }*/
-    /* Lets parse */
-    switch (cmd_opt) {
+    }
+
+    switch (cmd_opt) {    /* Lets parse */      /* Error handle: Mainly missing arg or illegal option */
+    case 'n':
+      if(optarg){
+	sscanf(optarg, "%d", &problemNum);
+      } else {
+	fprintf(stderr, "-n no argument\n");
+      }
+      break;
     case 'f':
       if (optarg){
 	asprintf(&problemName, "%s", optarg);
-	printf("use %s as saved file\n", problemName);
+	fprintf(stderr, "use %s as saved file\n", problemName);
+      } else {
+	fprintf(stderr, "-f no argument\n");
       }
       break;
-      /* Error handle: Mainly missing arg or illegal option */
     case '?':
       fprintf(stderr, "Illegal option\n");
       break;
@@ -56,31 +60,6 @@ void parseArgument(int argc, char** argv){
     asprintf(&problemName, "result");
 }
 
-void readInputLimit(){
-  char in[10000];//big enough
-  scanf("%d %d", &r, &c);
-  lim_row.resize(r);  lim_col.resize(c);
-  gets(in);//dumb
-  for(int i = 0; i < r; i++){
-    gets(in);
-    char *p;
-    p = strtok(in, " ");
-    while(p != NULL){
-      lim_row[i].push_back(Limit(atoi(p)));
-      p = strtok(NULL, " ");
-    }
-  }
-  for(int i = 0; i < c; i++){
-    gets(in);
-    char *p;
-    p = strtok(in, " ");
-    while(p != NULL){
-      lim_col[i].push_back(Limit(atoi(p)));
-      p = strtok(NULL, " ");
-    }
-  }
-}
-
 int main(int argc, char** argv){
   setlocale(LC_ALL, "");
   parseArgument(argc, argv);
@@ -88,14 +67,17 @@ int main(int argc, char** argv){
 
   struct Board board;
   NonogramInputReader ir(stdin);  //new reader
-  ir.readInputAndGetBoard(&board, problemName);
-  
-  board.doHeuristic();
-  board.doDFS();
-  board.checkAnswer();
-  board.printBoard("after solved");
-  board.saveResult();
+  for(int i = 0; i < problemNum; i++){
+    fprintf(stderr, "To solve problem %d\n", i);
+    ir.readInputAndGetBoard(&board, problemName);
+    board.doHeuristic();
+    board.doDFS();
+    board.checkAnswer();
+    board.printBoard("after solved");
+    board.saveResult();
+  }
   clock_t endTime = clock();
+
   printf("time spent: %lf\n", (double(endTime) - double(beginTime)) / CLOCKS_PER_SEC);
   return 0;
 }
