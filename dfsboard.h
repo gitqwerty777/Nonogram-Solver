@@ -3,6 +3,7 @@
 
 #include "board.h"
 #include "unistd.h"
+#include "assert.h"
 class DFSBoard: public Board{
  public:
  DFSBoard(Board& b): Board(b){//inherit
@@ -14,9 +15,10 @@ class DFSBoard: public Board{
   vector< vector<int> > lastfillStart;
   vector<Board> backupBoards;
 
-  void Rewind(int);
+  void Restore(int);
+  void Backup(int);
   void BackupBoard(Board &b);
-  void RewindBoard(Board &b);
+  void RestoreBoard(Board &b);
 
   bool getNextLegalFillStart(vector<int>&, int);
   bool getNextFillStart(int, vector<int>&);
@@ -33,7 +35,7 @@ class DFSBoard: public Board{
 
   //DFS with heuristic
   void DoDFS();
-  int getRowWithMinBranch(int nowr, vector<int>& rowOrder);
+  void getRowWithMinBranch(int nowr, vector<int>& rowOrder);
   
   bool tryFillRowWithHeuristic(int);
   bool tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart);
