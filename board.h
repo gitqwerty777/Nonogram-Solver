@@ -15,9 +15,11 @@ struct Limit{
   int l;
   int fs, ls, fe, le;
   Limit(int ll){l = ll; fs=0; ls=0;}
-  void set_pos(int a, int b){
+  bool set_pos(int a, int b){
+    bool isUpdate = (a > fs || b < ls);
     fs = a; ls = b;
     fe = fs+l-1; le = ls+l-1;
+    return isUpdate;
   }
   bool isSolved(){
     return (fs == ls);
@@ -142,6 +144,9 @@ struct Board{
   void no_solution(const char[], line_type t, int i);
 
   void doDFS();
+
+  void setLimit(line_type t, int linei, Limit &l, int fs, int ls);
+  
 };
 
 #endif
