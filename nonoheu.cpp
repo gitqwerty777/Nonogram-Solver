@@ -14,11 +14,13 @@ using namespace std;
 
 char *problemName = NULL;
 int problemNum = 1;
+int boardSize;
+bool isTourament = false;
 
 void parseArgument(int argc, char** argv){
   // use getopt to get arg: http://wen00072-blog.logdown.com/posts/171197-using-getopt-parse-command-line-parameter
   while(1){
-    int cmd_opt = getopt(argc, argv, "n:f:");
+    int cmd_opt = getopt(argc, argv, "tn:f:s:");
     if (cmd_opt == -1) {    /* End condition always first */
       break;
     }
@@ -27,11 +29,22 @@ void parseArgument(int argc, char** argv){
     }
 
     switch (cmd_opt) {    /* Lets parse */      /* Error handle: Mainly missing arg or illegal option */
+    case 't':
+      fprintf(stderr, "enable tourament mode\n");
+      isTourament = true;
+      break;
     case 'n':
       if(optarg){
 	sscanf(optarg, "%d", &problemNum);
       } else {
 	fprintf(stderr, "-n no argument\n");
+      }
+      break;
+    case 's':
+      if(optarg){
+	sscanf(optarg, "%d", &boardSize);
+      } else {
+	fprintf(stderr, "-s no argument\n");
       }
       break;
     case 'f':
@@ -66,10 +79,18 @@ int main(int argc, char** argv){
   clock_t beginTime = clock();
 
   struct Board board;
+  NonogramWriterInterface* writer;
+  if(isTourament){
+    writer = new NonogramWriter_Tourament;
+  } else {
+    writer = new NonogramWriter;
+  }
   NonogramInputReader ir(stdin);  //new reader
+  board.setWriter(writer);
+
   for(int i = 0; i < problemNum; i++){
     fprintf(stderr, "To solve problem %d\n", i);
-    ir.readInputAndGetBoard(&board, problemName);
+    ir.readInputAndGetBoard(&board, problemName, isTourament);
     board.doHeuristic();
     board.doDFS();
     board.checkAnswer();

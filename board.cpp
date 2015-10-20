@@ -1,5 +1,6 @@
 #include "board.h"
 #include "dfsboard.h"
+#include "nonogramWriter.h"
 #include <stdio.h>
 #include <vector>
 #include <string.h>
@@ -767,6 +768,22 @@ void Board::printBoard(const char in[]){
 }
 
 void Board::saveResult(){//the same as start of printBoard
+  fprintf(stderr, "saveResult\n");
+  writer->saveResult(this);
+  
+}
+void Board::saveSimpleResult(FILE* f){//TODO: abstract
+  fprintf(f, "$%d\n", problemNum);
+  for(int i = 0; i < r; i++){
+    for(int j = 0; j < c; j++){
+      fprintf(f, "%d", (b[i][j] == 1)?1:0);
+      if(j != c-1)
+	fputs("\t", f);
+    }
+    fputs("\n", f);
+  }
+}
+void Board::saveFullResult(){
   setlocale(LC_ALL, "");
   char *outputName;
   asprintf(&outputName, "%s.out", name);

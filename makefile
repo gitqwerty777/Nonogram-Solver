@@ -16,15 +16,15 @@ information:
 
 main: heu
 heu: nonoheu.o dfsboard.o board.o
-	$(CXX) $(CXXFLAGS) nonoheu.o board.o dfsboard.o -o heu; find . | grep ".*\.\(c\|h\|cpp\)" | xargs etags -f tags # generate emacs tags
+	$(CXX) $(CXXFLAGS) nonoheu.o board.o dfsboard.o -o heu; find . | grep ".*\.\(c\|h\|cpp\)" | xargs etags -f TAGS # generate emacs tags
 test: heu
 	sh runtest.sh # if not passed the test, return error
 
-nonoheu.o: nonoheu.cpp dfsboard.h board.h nonogramReader.h
+nonoheu.o: nonoheu.cpp dfsboard.h board.h nonogramReader.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c
-board.o: board.cpp board.h dfsboard.h
+board.o: board.cpp board.h dfsboard.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) board.cpp -c
-dfsboard.o: dfsboard.cpp dfsboard.h board.h
+dfsboard.o: dfsboard.cpp dfsboard.h board.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) dfsboard.cpp -c
 
 clean:
