@@ -6,19 +6,13 @@
 
 class NonogramInputReader{
  public:
-  bool isLegal;
   int problemNum;
   FILE* f;
   int r, c;
   vector< vector<struct Limit> > lim_row, lim_col;
 
   NonogramInputReader(FILE* p){
-    if(p == NULL){
-      isLegal = false;
-      return;
-    } else{
-      f = p;
-    }
+    f = p;
   }
 
   void readInput(){
@@ -78,9 +72,14 @@ class NonogramInputReader{
     }
   }
   
-  void readInputAndGetBoard(Board *b, char* name){
-    readInput_Tourament();//it can be changed
-    initBoard(b, name);
+  void readInputAndGetBoard(Board *b, char* name, bool isTour){
+    if(isTour){
+      readInput_Tourament();//it can be changed
+      initBoard(b, name);
+    } else {
+      readInput();
+      initBoard(b, name);
+    }
   }
   
  private:

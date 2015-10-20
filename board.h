@@ -51,10 +51,12 @@ class LineChanged{//TODO:
 
 typedef LineChanged change;
 
+class NonogramWriterInterface;
+
 struct Board{
   Board(){}
-  Board(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL){
-    init(rr, cc, lr, lc, n);
+  Board(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
+    init(rr, cc, lr, lc, n, problemNum);
   }
   void init(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
     isLimitInit = false;
@@ -84,10 +86,16 @@ struct Board{
     else
       name = n;
     isFailed = 0;
+    this->problemNum = problemNum;
   }
 
-  int r, c;
+  void setWriter(NonogramWriterInterface* writer){
+    this->writer = writer;
+  }
+
+  int problemNum;
   char* name;
+  int r, c;
   int isFailed;//TODO: delete?
   bool isLimitInit;
   vector< vector<int> > b;//board
@@ -101,6 +109,7 @@ struct Board{
   char* tryFailedReason;
   int solvedLineNum;
   int alreadySetGridNumber;
+  NonogramWriterInterface* writer;
 
   void solveGame();
   
@@ -140,6 +149,8 @@ struct Board{
   
   void printBoard(const char[]);
   void saveResult();
+  void saveSimpleResult(FILE *f);
+  void saveFullResult();
   void no_solution(const char[]);
   void no_solution(const char[], line_type t, int i);
 
@@ -148,5 +159,6 @@ struct Board{
   void setLimit(line_type t, int linei, Limit &l, int fs, int ls);
   
 };
+
 
 #endif
