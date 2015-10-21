@@ -8,12 +8,12 @@
 class LimitFiller{
 public:
   LimitFiller(){l.clear(); fillStart.clear();};
-  LimitFiller(vector<Limit> limits): l(limits){isInit = true;};
+  LimitFiller(vector<RowLimit> limits): l(limits){isInit = true;};
   bool isInit;
-  vector<Limit> l;
+  vector<RowLimit> l;
   vector<int> fillStart;
   bool isInited(){return isInit;}
-  void setLimit(vector<Limit>& limits){l = limits; isInit = true;}
+  void setLimit(vector<RowLimit>& limits){l = (limits); isInit = true;}
   void destroy(){isInit = false; fillStart.clear();}
   bool getNextFillStart();
   bool getNextFillStartbyFillStart();
