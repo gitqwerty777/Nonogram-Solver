@@ -9,7 +9,8 @@ class NonogramInputReader{
   int problemNum;
   FILE* f;
   int r, c;
-  vector< vector<struct Limit> > lim_row, lim_col;
+  vector< vector<struct RowLimit> > lim_row;
+  vector< vector<struct ColLimit> > lim_col;
   int size;
 
   NonogramInputReader(FILE* p, int size){
@@ -28,7 +29,7 @@ class NonogramInputReader{
       char *p;
       p = strtok(in, " ");
       while(p != NULL){
-	lim_row[i].push_back(Limit(atoi(p)));
+	lim_row[i].push_back(RowLimit(atoi(p)));
 	p = strtok(NULL, " ");
       }
     }
@@ -37,7 +38,7 @@ class NonogramInputReader{
       char *p;
       p = strtok(in, " ");
       while(p != NULL){
-	lim_col[i].push_back(Limit(atoi(p)));
+	lim_col[i].push_back(ColLimit(atoi(p)));
 	p = strtok(NULL, " ");
       }
     }
@@ -59,7 +60,7 @@ class NonogramInputReader{
       char *p;
       p = strtok(in, " \t");
       while(p != NULL){
-	lim_col[i].push_back(Limit(atoi(p)));
+	lim_col[i].push_back(ColLimit(atoi(p)));
 	p = strtok(NULL, " \t");
       }
     }
@@ -68,7 +69,7 @@ class NonogramInputReader{
       char *p;
       p = strtok(in, " \t");
       while(p != NULL){
-	lim_row[i].push_back(Limit(atoi(p)));
+	lim_row[i].push_back(RowLimit(atoi(p)));
 	p = strtok(NULL, " \t");
       }
     }

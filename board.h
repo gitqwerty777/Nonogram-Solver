@@ -26,6 +26,14 @@ struct Limit{
   }
 };
 
+struct RowLimit: public Limit{
+  RowLimit(int ll): Limit(ll){}
+};
+
+struct ColLimit: public Limit{
+  ColLimit(int ll): Limit(ll){}
+};
+
 struct Point{
   int r, c;
   Point(int rr, int cc){
@@ -55,10 +63,10 @@ class NonogramWriterInterface;
 
 struct Board{
   Board(){}
-  Board(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
+  Board(int rr, int cc, vector< vector<struct RowLimit> > lr, vector< vector<struct ColLimit> > lc, char* n = NULL, int problemNum = 1){
     init(rr, cc, lr, lc, n, problemNum);
   }
-  void init(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
+  void init(int rr, int cc, vector< vector<struct RowLimit> > lr, vector< vector<struct ColLimit> > lc, char* n = NULL, int problemNum = 1){
     isLimitInit = false;
     r = rr;  c = cc;
     lim_row = lr; lim_col = lc;
@@ -99,7 +107,9 @@ struct Board{
   int isFailed;//TODO: delete?
   bool isLimitInit;
   vector< vector<int> > b;//board
-  vector< vector<struct Limit> > lim_row, lim_col;
+  //TODO: need to use pointer instead of instance
+  vector< vector<struct RowLimit> > lim_row;
+  vector< vector<struct ColLimit> > lim_col;
   vector<int> change_row, change_col;
   //priority_queue<change, vector<change>, change> changeQueue; //TODO: implement
   vector<bool> solved_row, solved_col;
