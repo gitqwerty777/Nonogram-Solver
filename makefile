@@ -20,6 +20,9 @@ heu: nonoheu.o dfsboard.o board.o
 test: heu
 	sh runtest.sh # if not passed the test, return error
 
+test15: heu
+	./heu -t -n 200 -s 15 < 15question.txt > trash15mul200
+
 nonoheu.o: nonoheu.cpp dfsboard.h board.h nonogramReader.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c
 board.o: board.cpp board.h dfsboard.h nonogramWriter.h
