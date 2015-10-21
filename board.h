@@ -76,6 +76,14 @@ struct Board{
     for(int i = 0; i < r; i++)
       for(int j = 0; j < c; j++)
 	b[i][j] = SPACE;
+
+    isupdate.resize(r);
+    for(int i = 0; i < r; i++)
+      isupdate[i].resize(c);
+    for(int i = 0; i < r; i++)
+      for(int j = 0; j < c; j++)
+	isupdate[i][j] = false;
+    
     solvedLineNum = 0;
     alreadySetGridNumber = 0;
     change_row.resize(r); change_col.resize(c);
@@ -107,6 +115,8 @@ struct Board{
   int isFailed;//TODO: delete?
   bool isLimitInit;
   vector< vector<int> > b;//board
+  vector< vector<bool> > isupdate;//board
+  bool isUpdate(int r, int c){return isupdate[r][c];}
   //TODO: need to use pointer instead of instance
   vector< vector<struct RowLimit> > lim_row;
   vector< vector<struct ColLimit> > lim_col;
