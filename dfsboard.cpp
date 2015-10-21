@@ -78,10 +78,10 @@ bool DFSBoard::getNextFillStart(int nowr, vector<int>& fillStart){//TODO: rename
 	  break;//goto i = 0, readding
 	}
 	lastfillStart[nowr] = fillStart;
-	printf("(");
+	/*printf("(");
 	for(int i = 0; i < lim_row[nowr].size(); i++)
 	  printf("%d ", fillStart[i]);
-	printf(")");
+	  printf(")");*/
 	return true;
       } else {//fillstart too big, return to fs, continue adding next bit(limit)
 	fillStart[limiti] = lim_row[nowr][limiti].fs;
@@ -202,9 +202,9 @@ bool DFSBoard::tryFillRowWithHeuristic(int nowr){
   
   if(isSuccess){
     printf("fill row %d success, fillstart: ", nowr);
-    for(int i = 0; i < lim_row[nowr].size(); i++){
+    /*for(int i = 0; i < lim_row[nowr].size(); i++){
       printf("%d ", fillStart[i]);
-    }
+      }*/
     puts("");
     lastfillStart[nowr] = fillStart;
   }
@@ -248,7 +248,7 @@ bool DFSBoard::isDFSAnswerCorrect(){
 }
 
 void DFSBoard::Restore(int nowr){
-  printf("restore %d\n", nowr);
+  //printf("restore %d\n", nowr);
   RestoreBoard(backupBoards[nowr]);
 }
 void DFSBoard::Backup(int nowr){
