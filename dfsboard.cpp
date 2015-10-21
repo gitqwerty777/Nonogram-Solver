@@ -40,6 +40,50 @@ bool DFSBoard::tryFillRow(int nowr){//is vector copy by reference?
   return isSuccess;
 }
 
+bool LimitFiller::getNextFillStart(){
+  if(fillStart.size() == 0){//this row is not tried yet, return original fs
+    fillStart.resize(l.size());
+    for(int i = 0; i < l.size(); i++){
+      fillStart[i] = l[i].fs;
+    }
+  } else {//get previous fillstart
+    if(!getNextFillStartbyFillStart())
+      return false;
+  }
+  return true;
+}
+bool LimitFiller::getNextFillStartbyFillStart(){
+  int limiti = 0;
+  while(limiti < l.size()){
+    limiti = 0;
+    while(limiti < l.size()){
+      if(l[limiti].ls > fillStart[limiti]){//add 1 and return
+	fillStart[limiti]++;
+	if(!isLimitLegal()){
+	  break;//goto i = 0, readding
+	}
+	/*printf("(");
+	  for(int i = 0; i < l.size(); i++)
+	  printf("%d ", fillStart[i]);
+	  printf(")");*/
+	return true;
+      } else {//fillstart too big, return to fs, continue adding next bit(limit)
+	fillStart[limiti] = l[limiti].fs;
+	limiti++;
+      }
+    }
+  }
+  //printf("row %d: cannot find next fillstart", nowr);
+  return false;
+}
+
+bool LimitFiller::isLimitLegal(){
+  for(int i = 0; i < l.size()-1; i++)
+    if(fillStart[i] + l[i].l >= fillStart[i+1])
+      return false;
+  return true;
+}
+
 bool DFSBoard::getNextLegalFillStart(vector<int>& fillStart, int nowr){//TODO: rename to getnext...
   if(lastfillStart[nowr].size() == 0){//this row is not tried yet, return original fs
     fillStart.resize(lim_row[nowr].size());
@@ -115,11 +159,6 @@ bool DFSBoard::checkAvailableCol(int nowc){//not implement yet
   }
 }
 
-
-void printVector(char* s){
-  
-}
-
 //DFS with heuristic
 void DFSBoard::DoDFS(){
   //choose an answer of the line with minimum possible answer() -> use heuristic to fill board -> check other is legal or not -> if legal, next line; else, refill the current line
@@ -139,7 +178,7 @@ void DFSBoard::DoDFS(){
 	puts("no solution:cannot fill first row");
 	break;
       } else {	//all possibilities in row nowr are failed, recover board to previous row(nowr-1)
-	lastfillStart[nowrow].clear();
+	limitFillers[nowrow].destroy();
 	Restore(rowOrder[--rowCount]);
       }
     } else {// fill answer success, continue filling next row
@@ -185,20 +224,21 @@ void DFSBoard::getRowWithMinBranch(int rowCount, vector<int>& rowOrder){
   //return mini;
 }
 bool DFSBoard::tryFillRowWithHeuristic(int nowr){
-  vector<int> fillStart;
+  limitFillers[nowr].setLimit(lim_row[nowr]);
+  LimitFiller& filler = limitFillers[nowr];
   printf("fillRow%d\n", nowr);
-  if(!getNextLegalFillStart(fillStart, nowr))
+  if(!filler.getNextFillStart())
     return false;
 
   bool isSuccess = false;
   Backup(nowr);
   do{
-    if(tryFillRowbyFillStartHeuristic(nowr, fillStart)){//check available
+    if(tryFillRowbyFillStartHeuristic(nowr, filler.fillStart)){//check available
       isSuccess = true;
     } else{
       Restore(nowr);
     }
-  } while(!isSuccess && getNextFillStart(nowr, fillStart));
+  } while(!isSuccess && filler.getNextFillStart());
   
   if(isSuccess){
     printf("fill row %d success, fillstart: ", nowr);
@@ -206,7 +246,6 @@ bool DFSBoard::tryFillRowWithHeuristic(int nowr){
       printf("%d ", fillStart[i]);
       }*/
     puts("");
-    lastfillStart[nowr] = fillStart;
   }
   return isSuccess;
 }
