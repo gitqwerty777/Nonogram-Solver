@@ -26,8 +26,11 @@ public:
     printBoard("before DFS");
     limitFillers.resize(r);
     backupBoards.resize(r);
+    isFilled.resize(r);
   }
 
+  vector<bool> isFilled;
+  bool isFilledByDFS(int nowr){return isFilled[nowr];}
   vector< LimitFiller > limitFillers;
   vector <vector<int> > lastfillStart;
   vector<Board> backupBoards;
@@ -37,9 +40,6 @@ public:
   void BackupBoard(Board &b);
   void RestoreBoard(Board &b);
 
-  bool getNextLegalFillStart(vector<int>&, int);
-  bool getNextFillStart(int, vector<int>&);
-  
   //simple DFS
   void DoSimpleDFS();
   bool isDFSAnswerCorrect();
