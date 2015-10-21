@@ -167,13 +167,13 @@ bool DFSBoard::tryFillRowWithHeuristic(int nowr){
     }
   } while(!isSuccess && filler.getNextFillStart());
   
-  if(isSuccess){
+  /*if(isSuccess){
     printf("fill row %d success, fillstart: ", nowr);
-    /*for(int i = 0; i < lim_row[nowr].size(); i++){
+    for(int i = 0; i < lim_row[nowr].size(); i++){
       printf("%d ", fillStart[i]);
-      }*/
+      }
     puts("");
-  }
+  }*/
   return isSuccess;
 }
 bool DFSBoard::tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//TODO: check bug

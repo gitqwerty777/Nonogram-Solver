@@ -768,9 +768,7 @@ void Board::printBoard(const char in[]){
 }
 
 void Board::saveResult(){//the same as start of printBoard
-  fprintf(stderr, "saveResult\n");
   writer->saveResult(this);
-  
 }
 void Board::saveSimpleResult(FILE* f){//TODO: abstract
   fprintf(f, "$%d\n", problemNum);

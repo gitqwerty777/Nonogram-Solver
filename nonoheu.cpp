@@ -79,14 +79,14 @@ int main(int argc, char** argv){
   clock_t beginTime = clock();
 
   struct Board board;
+
+  NonogramInputReader ir(stdin, boardSize);  //new reader
   NonogramWriterInterface* writer;
   if(isTourament){
     writer = new NonogramWriter_Tourament;
   } else {
     writer = new NonogramWriter;
   }
-
-  NonogramInputReader ir(stdin, boardSize);  //new reader
   board.setWriter(writer);
 
   for(int i = 0; i < problemNum; i++){
@@ -94,7 +94,10 @@ int main(int argc, char** argv){
     ir.readInputAndGetBoard(&board, problemName, isTourament);
     board.doHeuristic();
     board.doDFS();
-    board.checkAnswer();
+    if(!board.checkAnswer())
+      fprintf(stderr, "check answer failed\n");
+    else
+      fprintf(stderr, "%d correct\n", i);
     board.printBoard("after solved");
     board.saveResult();
   }
