@@ -24,9 +24,9 @@ class DFSBoard: public Board{
 public:
   DFSBoard(Board& b): Board(b){//inherit
     printBoard("before DFS");
-    limitFillers.resize(r);
-    backupBoards.resize(r);
-    isFilled.resize(r);
+    limitFillers.resize(r+c);
+    backupBoards.resize(r+c);
+    isFilled.resize(r+c);
   }
 
   vector<bool> isFilled;
@@ -34,9 +34,10 @@ public:
   vector< LimitFiller > limitFillers;
   vector <vector<int> > lastfillStart;
   vector<Board> backupBoards;
+  vector<Line> lineOrder;
 
-  void Restore(int);
-  void Backup(int);
+  void Restore(Line&);
+  void Backup(Line&);
   void BackupBoard(Board &b);
   void RestoreBoard(Board &b);
 
@@ -52,7 +53,7 @@ public:
 
   //DFS with heuristic
   void DoDFS();
-  void getRowWithMinBranch(int nowr, vector<int>& rowOrder);
+  void getRowWithMinBranch(int nowr, vector<Line>& lineOrder);
   
   bool tryFillRowWithHeuristic(int);
   bool tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart);
