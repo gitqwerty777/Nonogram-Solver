@@ -2,8 +2,8 @@
 #include "dfsboard.h"
 #include <cstdlib>
 #define INF 2147483647
-/*
-void DFSBoard::DoSimpleDFS(){//Simple DFS, without heuristic, not used
+
+/*void DFSBoard::DoSimpleDFS(){//Simple DFS, without heuristic, not used
   puts("dosimpleDFS");
   int nowr = 0;
   while(nowr <= r){
@@ -21,7 +21,7 @@ void DFSBoard::DoSimpleDFS(){//Simple DFS, without heuristic, not used
 	  Restore(--nowr);
     }
   }
-}
+  }*/
 bool DFSBoard::tryFillRow(int nowr){//is vector copy by reference?
   vector<int> fillStart;
   printf("fillRow%d\n", nowr);
@@ -98,32 +98,34 @@ bool DFSBoard::checkAvailableCol(int nowc){//not implement yet
   }
 }
 
+
 //DFS with heuristic
 void DFSBoard::DoDFS(){//TODO: choose col
   //choose an answer of the line with minimum possible answer() -> use heuristic to fill board -> check other is legal or not -> if legal, next line; else, refill the current line
   for(int i = 0; i < r; i++)
     isFilled[i] = false;
   puts("doDFS");
-  vector<int> rowOrder(r);
-  int rowCount = 0;
-  getRowWithMinBranch(rowCount, rowOrder);
+  lineOrder.clear();
+  lineOrder.resize(r+c);
+  int dfsLineCount = 0;
+  getRowWithMinBranch(dfsLineCount, lineOrder);
   while(!checkAnswer()){
-    int nowrow = rowOrder[rowCount];
-    if(!tryFillRowWithHeuristic(nowrow)){//try all possibilities to fill the row, will filling next answer after previous called
-      if(rowCount == 0){
+    int nowLine = lineOrder[dfsLineCount];
+    if(!tryFillRowWithHeuristic(nowLine)){//try all possibilities to fill the row, will filling next answer after previous called
+      if(dfsLineCount == 0){
 	puts("no solution:cannot fill first row");
 	break;
       } else {	//all possibilities in row nowr are failed, recover board to previous row(nowr-1)
-	limitFillers[nowrow].destroy();
+	limitFillers[nowrow].destroy();//TODO: modify
 	isFilled[nowrow] = false;
-	Restore(rowOrder[--rowCount]);
+	Restore(lineOrder[--dfsLineCount]);
       }
     } else {// fill answer success, continue filling next row
       if(isAllSolved())
 	return;
-      isFilled[nowrow] = true;
-      rowCount++;
-      getRowWithMinBranch(rowCount, rowOrder);//get next row index
+      isFilled[nowrow] = true;//TODO:mod
+      dfsLineCount++;
+      getRowWithMinBranch(dfsLineCount, lineOrder);//get next row index
     }
   }
   if(!checkAnswer()){
@@ -131,50 +133,64 @@ void DFSBoard::DoDFS(){//TODO: choose col
   }
 }
 
-
-void DFSBoard::getRowWithMinBranch(int rowCount, vector<int>& rowOrder){
+void DFSBoard::getRowWithMinBranch(int dfsLineCount, vector<Line>& lineOrder){//TODO: RENAME, lineorder-checkequal, linear search used -> bool memorize
   int mini;
+  line_type mint;
   long minv = INF;
   bool first = true;
   for(int i = 0; i < r; i++){
-    if(solved_row[i] || isFilledByDFS(i))
+    if(solved_row[i] || isFilledByDFS(i))//TODO: isfill mod
       continue;
     long v = 1;
     for(int j = 0; j < lim_row[i].size(); j++)
       if(!lim_row[i][j].isSolved())
 	v *= lim_row[i][j].ls-lim_row[i][j].fs+1;
     if(v < minv || first){
+      mint = ROW;
       minv = v;
       mini = i;
       first = false;
     }
   }
-  rowOrder[rowCount] = mini;
+  for(int i = 0; i < c; i++){
+    bool used = false;
+    if(solved_col[i])
+      continue;
+    for(int j = 0; j < dfsLineCount; j++)
+      if(lineOrder[j].equals(COL, i))
+	used = true;
+    if(used)
+      continue;
+    long v = 1;
+    for(int j = 0; j < lim_col[i].size(); j++)
+      if(!lim_col[i][j].isSolved())
+	v *= lim_row[i][j].ls-lim_row[i][j].fs+1;
+    if(v < minv || first){
+      mint = COL;
+      minv = v;
+      mini = i;
+      first = false;
+    }
+  }
+  assert(first != true);
+  lineOrder[dfsLineCount] = Line(mint, mini);
 }
-bool DFSBoard::tryFillRowWithHeuristic(int nowr){
-  limitFillers[nowr].setLimit(lim_row[nowr]);
+bool DFSBoard::tryFillRowWithHeuristic(Line nowLine){
+  limitFillers[nowr].setLimit(lim_row[nowr]);//TODO: modify
   LimitFiller& filler = limitFillers[nowr];
-  //printf("fillRow%d\n", nowr);
   if(!filler.getNextFillStart())
     return false;
-
+  
   bool isSuccess = false;
-  Backup(nowr);
+  Backup(nowLine);
   do{
-    if(tryFillRowbyFillStartHeuristic(nowr, filler.fillStart)){//check available
+    if(tryFillRowbyFillStartHeuristic(nowLine, filler.fillStart)){//check available
       isSuccess = true;
     } else{
-      Restore(nowr);
+      Restore(nowLine);
     }
   } while(!isSuccess && filler.getNextFillStart());
   
-  /*if(isSuccess){
-    printf("fill row %d success, fillstart: ", nowr);
-    for(int i = 0; i < lim_row[nowr].size(); i++){
-      printf("%d ", fillStart[i]);
-      }
-    puts("");
-  }*/
   return isSuccess;
 }
 bool DFSBoard::tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){
@@ -214,12 +230,18 @@ bool DFSBoard::isDFSAnswerCorrect(){
   return true;
 }
 
-void DFSBoard::Restore(int nowr){
+void DFSBoard::Restore(Line& l){
   //printf("restore %d\n", nowr);
-  RestoreBoard(backupBoards[nowr]);
+  if(l.t == ROW)
+    RestoreBoard(backupBoards[l.i]);
+  else
+    RestoreBoard(backupBoards[r + l.i]);
 }
-void DFSBoard::Backup(int nowr){
-  BackupBoard(backupBoards[nowr]);
+void DFSBoard::Backup(Line& l){
+  if(l.t == ROW)
+    BackupBoard(backupBoards[l.i]);
+  else
+    BackupBoard(backupBoards[r + l.i]);
 }
 void DFSBoard::BackupBoard(Board &b){
   b.b = this->b;

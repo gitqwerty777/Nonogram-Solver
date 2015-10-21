@@ -41,6 +41,16 @@ struct Point{
   }
 };
 
+struct Line{
+  line_type t;
+  int i;
+  Line(){};
+  Line(line_type type, int index): t(type), i(index){};
+  bool equals(line_type t, int i){
+    return (this->t == t) && (this-> i == i);
+  }
+};
+
 class LineChanged{//TODO:
  public:
   line_type type;
