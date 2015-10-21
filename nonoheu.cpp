@@ -14,7 +14,7 @@ using namespace std;
 
 char *problemName = NULL;
 int problemNum = 1;
-int boardSize;
+int boardSize = 25;
 bool isTourament = false;
 
 void parseArgument(int argc, char** argv){
@@ -85,7 +85,8 @@ int main(int argc, char** argv){
   } else {
     writer = new NonogramWriter;
   }
-  NonogramInputReader ir(stdin);  //new reader
+
+  NonogramInputReader ir(stdin, boardSize);  //new reader
   board.setWriter(writer);
 
   for(int i = 0; i < problemNum; i++){

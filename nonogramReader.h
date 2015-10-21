@@ -10,9 +10,11 @@ class NonogramInputReader{
   FILE* f;
   int r, c;
   vector< vector<struct Limit> > lim_row, lim_col;
+  int size;
 
-  NonogramInputReader(FILE* p){
+  NonogramInputReader(FILE* p, int size){
     f = p;
+    this->size = size;
   }
 
   void readInput(){
@@ -47,7 +49,7 @@ class NonogramInputReader{
 
   void readInput_Tourament(){
     char in[10000];//I think it's big enough
-    r = 15; c = 15;
+    r = size; c = size;
     fscanf(f, "$%d", &problemNum);
     lim_row.clear(); lim_col.clear();
     lim_row.resize(r);  lim_col.resize(c);
@@ -75,11 +77,10 @@ class NonogramInputReader{
   void readInputAndGetBoard(Board *b, char* name, bool isTour){
     if(isTour){
       readInput_Tourament();//it can be changed
-      initBoard(b, name);
     } else {
       readInput();
-      initBoard(b, name);
     }
+    initBoard(b, name);
   }
   
  private:
