@@ -183,9 +183,15 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
       changeQueue.push(change(ch.type, ch.lineNum, *mychange));
   }
   if(!isChange && maxChangeNum == 0){
-    DEBUG_PRINT("NO HEURISTIC ANSWER\n");
-    printf("no heursitic answer\n");
-    return false;
+    if(solveMode == HEURISTIC){
+      DEBUG_PRINT("NO HEURISTIC ANSWER\n");
+      printf("no heursitic answer\n");
+      return false;
+    }
+    else{
+      printf("dfs heursitic complete\n");
+      return false;
+    }
   }
   return true;
 }
@@ -193,8 +199,9 @@ bool Board::updateByHeuristic(line_type type, int line){
   int originalSetnum = alreadySetGridNumber;
   if(type == ROW){
     DEBUG_PRINT("updateHeuristic: row%d\n", line);
-    fillRowByLimit(line);//limits are updated by others, need to fillgrid
     updateLimitByLimit_row(line);//
+    fillRowByLimit(line);//limits are updated by others, need to fillgrid
+
     for(int j = 0; j < c; j++){//TODO: optimize
       if(b[line][j] != SPACE)
 	updateRowLimits(Point(line,j), b[line][j]);
@@ -202,8 +209,9 @@ bool Board::updateByHeuristic(line_type type, int line){
     fill_blank_row(line);
   } else {
     DEBUG_PRINT("updateHeuristic: col%d\n", line);
-    fillColByLimit(line);
     updateLimitByLimit_col(line);
+    fillColByLimit(line);
+
     for(int j = 0; j < r; j++){
       if(b[j][line] != SPACE)
 	updateColLimits(Point(j, line), b[j][line]);
@@ -378,6 +386,8 @@ void Board::fill_blank_col(int nowc){
 }
 
 void Board::updateRowLimits(struct Point p, int v){//if point only in one limit, update limit by it
+  //if(isUpdate(p.r, p.c))
+  //return;
   for(int j = 0; j < lim_row[p.r].size(); j++)
     if(in_limit_row(p.r, j, p.c))
       updateLimitByGrid_row(p.r, j, p.c);
@@ -455,6 +465,8 @@ bool Board::only_in_one_limit_row(int nowr, int nowc, int limiti){
   //return ((limiti == 0) || !in_limit_row(nowr, limiti-1, nowc)) && (in_limit_row(nowr, limiti, nowc)) && ((limiti == lim_row[nowr].size()-1) || !in_limit_row(nowr, limiti+1, nowc));
 }
 void Board::updateColLimits(struct Point p, int v){
+  //if(isUpdate(p.r, p.c))
+  //return;
   DEBUG_PRINT("updatelimit_col(%d, %d)\n", p.r, p.c);
   for(int j = 0; j < lim_col[p.c].size(); j++)
     if(in_limit_col(p.c, j, p.r))
@@ -592,6 +604,7 @@ void Board::fillGrid(int r, int c, int v){
       fillRowByLimit(r);//limits are updated by others, need to fillgrid
       fillColByLimit(c);//limits are updated by others, need to fillgrid
       DEBUG_PRINT("update limits complete(%d, %d)\n", r, c);
+      isupdate[r][c] = true;
     }
   } else if(b[r][c] != v){
     if(solveMode == HEURISTIC){
