@@ -1,0 +1,41 @@
+schedule 10/15~11/21
+
+* 1. implementation
+** make independent scanner
+*** DONE make scanner interface 10/21
+CLOSED: [2015-10-20 二 19:54]
+*** DONE test by original data 10/22
+CLOSED: [2015-10-20 二 19:54]
+** make independent printer
+*** DONE make printer interface 10/28
+CLOSED: [2015-10-20 二 19:54]
+*** DONE test by original data 10/29
+CLOSED: [2015-10-20 二 19:54]
+** TODO misc
+*** TODO record solve time
+* 2. test
+** TODO test problems by datagen.py 
+*** ONGOING if there's wrong problem, record and analyze 11/5
+** TODO test speed
+*** ONGOING calculate worse case and record it 11/5
+* 3. optimization 
+** ONGOING refactor 10/15~10/30(simple), 11/5~11/21(combine 2., 3.)
+*** TODO O3 warnings
+** ONGOING optimize heuristic 11/5~11/21
+** ONGOING optimize dfs 11/5~11/21
+*** TODO use row and col to fill
+* 4. analyze
+** ONGOING 1. nonogram papaers 10/15~10/30
+* 5. misc
+** TODO check how to use makefile implicit and some techiniques
+
+commit 9c9165c48
+Wed Oct 21 16:58:14 2015 +0800
+|       |        15x15 | 25x25 |
+|-------+--------------+-------|
+|     1 |              | stuck |
+|     2 |              | stuck |
+| 1~100 |         4.85 |       |
+| 1~200 |        18.26 |       |
+| 1~300 | stuck in 275 |       |
+|  1000 |        stuck |       |
