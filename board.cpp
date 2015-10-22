@@ -33,9 +33,7 @@ inline void Board::no_solution(const char in[]){
     saveAndExit(1);
   } else if(solveMode == DFS) {
     DEBUG_PRINT("no solution: %s\n", in);
-    char* s;
-    asprintf(&s, "%s\n", in);
-    tryFailedReason = s;
+    sprintf(tryFailedReason, "%s\n", in);
     tryFailed = true;
     //failed in dfs searching TODO:
   }
@@ -46,9 +44,7 @@ inline void Board::no_solution(const char in[], line_type t, int i){//check answ
     saveAndExit(5);
   } else if (solveMode == DFS) {
     DEBUG_PRINT("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
-    char* s;
-    asprintf(&s, "%s", in);
-    tryFailedReason = s;
+    sprintf(tryFailedReason, "%s", in);
     tryFailed = true;
   }
 }
@@ -189,7 +185,7 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
       return false;
     }
     else{
-      printf("dfs heursitic complete\n");
+      //printf("dfs heursitic complete\n");
       return false;
     }
   }
@@ -207,6 +203,9 @@ bool Board::updateByHeuristic(line_type type, int line){
 	updateRowLimits(Point(line,j), b[line][j]);
     }
     fill_blank_row(line);
+
+    updateLimitByLimit_row(line);//
+    fillRowByLimit(line);//limits are updated by others, need to fillgrid
   } else {
     DEBUG_PRINT("updateHeuristic: col%d\n", line);
     updateLimitByLimit_col(line);
@@ -217,6 +216,9 @@ bool Board::updateByHeuristic(line_type type, int line){
 	updateColLimits(Point(j, line), b[j][line]);
     }
     fill_blank_col(line);
+
+    updateLimitByLimit_col(line);
+    fillColByLimit(line);
   }
   return originalSetnum != alreadySetGridNumber;//is really updated grid or not
 }
@@ -309,7 +311,7 @@ bool Board::updateLimitByLimit_col(int nowc){//TODO: no zero?...
   }
 }
 
-void Board::fill_blank_row(int nowr){//TODO: see
+void Board::fill_blank_row(int nowr){//fill white to the space sequence that is impossible for any limit to fill in
   DEBUG_PRINT("fill_blank_row %d\n", nowr);
   fillRowByLimit(nowr);
   int minl = INF;
@@ -415,10 +417,8 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
       fs = max(fs, seqe-l+1);//最左解右移
       ls = min(ls, seqs);//最右解左移
       if(fs > ls){
-	char* s;
-	asprintf(&s, "fs > ls at row %d limit %d fs %d ls %d, update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, limiti, fs, ls, linei, seqs, seqe, fs, ls);
+	sprintf(tryFailedReason, "fs > ls at row %d limit %d fs %d ls %d, update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, limiti, fs, ls, linei, seqs, seqe, fs, ls);
 	printBoard("fs >ls");
-	tryFailedReason = s;
 	tryFailed = true;
 	return false;
       }
@@ -494,9 +494,7 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
       ls = min(ls, seqs);//最右解左移
       if(fs > ls){
 	DEBUG_PRINT("update black grid sequence(%d~%d, %d): limit=(%d, %d)\n", seqs, seqe, linei, fs, ls);
-	char* s;
-	asprintf(&s, "fs > ls at col %d", linei);
-	tryFailedReason = s;
+	sprintf(tryFailedReason, "fs > ls at col %d", linei);
 	tryFailed = true;
 	return false;
       }
@@ -584,8 +582,7 @@ void Board::setLimit(line_type t, int linei, Limit &l, int fs, int ls){
 void Board::fillGrid(int r, int c, int v){
   if(r < 0 || c < 0 || r >= this->r || c >= this->c){
     DEBUG_PRINT("fillgrid out of range\n");
-    char* s;  asprintf(&s, "fillgrid out of range");
-    tryFailedReason = s;
+    sprintf(tryFailedReason, "fillgrid out of range");
     tryFailed = true;
     return;
   }
@@ -613,9 +610,7 @@ void Board::fillGrid(int r, int c, int v){
       saveAndExit(2);
     } else if(solveMode == DFS){
       DEBUG_PRINT("fill grid no the same value\n");
-      char* s;
-      asprintf(&s, "(%d, %d) fill twice(%d to %d)\n", r, c, b[r][c], v);
-      tryFailedReason = s;
+      sprintf(tryFailedReason, "(%d, %d) fill twice(%d to %d)\n", r, c, b[r][c], v);
       tryFailed = true;    
     }
   }
@@ -718,6 +713,7 @@ vector<int> Board::getLimitFromBoard_col(int nowc){
 wchar_t boardchar[3][20] = {L" ", L"\u25A0", L"\u25A1"};//space black white
 wchar_t cl[] = L"\n";
 void Board::printBoard(const char in[]){
+  return;
   printf("print board: %s\n", in);
   int maxlr = 0;
   for(int i = 0; i < r; i++)
@@ -796,7 +792,7 @@ void Board::saveSimpleResult(FILE* f){//TODO: abstract
 }
 void Board::saveFullResult(){
   setlocale(LC_ALL, "");
-  char *outputName;
+  char *outputName = NULL;
   asprintf(&outputName, "%s.out", name);
   fprintf(stderr, "saveresult %s\n", outputName);
   FILE* f = fopen(outputName, "w");

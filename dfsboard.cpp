@@ -1,5 +1,6 @@
 #include "board.h"
 #include "dfsboard.h"
+#include <cstdlib>
 #define INF 2147483647
 /*
 void DFSBoard::DoSimpleDFS(){//Simple DFS, without heuristic, not used
@@ -153,7 +154,7 @@ void DFSBoard::getRowWithMinBranch(int rowCount, vector<int>& rowOrder){
 bool DFSBoard::tryFillRowWithHeuristic(int nowr){
   limitFillers[nowr].setLimit(lim_row[nowr]);
   LimitFiller& filler = limitFillers[nowr];
-  printf("fillRow%d\n", nowr);
+  //printf("fillRow%d\n", nowr);
   if(!filler.getNextFillStart())
     return false;
 
@@ -193,7 +194,7 @@ bool DFSBoard::tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){
     if(!doHeuristicInOneLine())
       break;
   if(tryFailed){//find contradiction when updating heuristic, restore
-    printf("try fill: failed [%s], restore %d\n", tryFailedReason, nowr);
+    //printf("try fill: failed [%s], restore %d\n", tryFailedReason, nowr);
     return false;
   }
   //puts("dfs with heursitic success");
