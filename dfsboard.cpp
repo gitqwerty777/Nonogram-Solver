@@ -177,7 +177,7 @@ bool DFSBoard::tryFillRowWithHeuristic(int nowr){
   }*/
   return isSuccess;
 }
-bool DFSBoard::tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){//TODO: check bug
+bool DFSBoard::tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){
   tryFailed = false;
 
   /* fill row */
@@ -190,7 +190,7 @@ bool DFSBoard::tryFillRowbyFillStartHeuristic(int nowr, vector<int>& fillStart){
       fillGrid(nowr, i, WHITE);
 
   /* try heuristic */
-  while(!isAllSolved() && !tryFailed)//TODO: no need to test tryfailed
+  while(!isAllSolved() && !tryFailed)//TODO: no need to test tryfailed because it's checked in doheu...
     if(!doHeuristicInOneLine())
       break;
   if(tryFailed){//find contradiction when updating heuristic, restore
