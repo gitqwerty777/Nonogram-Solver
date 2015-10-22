@@ -20,7 +20,8 @@ public:
       fprintf(stderr, "cannot open file %s\n", outputName);
       return;
     }
-    b->saveSimpleResult(f);
+    b->saveSimpleResult(f);//BUG: cannot see answer after $200
+    fclose(f);
   }
 };
 

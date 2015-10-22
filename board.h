@@ -62,8 +62,9 @@ typedef LineChanged change;
 class NonogramWriterInterface;
 
 struct Board{
-  Board(){}
+  Board(){tryFailedReason = new char[200];}
   Board(int rr, int cc, vector< vector<struct RowLimit> > lr, vector< vector<struct ColLimit> > lc, char* n = NULL, int problemNum = 1){
+    tryFailedReason = new char[200];
     init(rr, cc, lr, lc, n, problemNum);
   }
   void init(int rr, int cc, vector< vector<struct RowLimit> > lr, vector< vector<struct ColLimit> > lc, char* n = NULL, int problemNum = 1){
