@@ -1,5 +1,7 @@
 schedule 10/15~11/21
 
+
+
 * 1. implementation
 ** make independent scanner
 *** DONE make scanner interface 10/21
@@ -19,8 +21,9 @@ CLOSED: [2015-10-20 二 19:54]
 ** TODO test speed
 *** ONGOING calculate worse case and record it 11/5
 * 3. optimization 
-** ONGOING refactor 10/15~10/30(simple), 11/5~11/21(combine 2., 3.)
+** ONGOING refact 10/15~10/30(simple), 11/5~11/21(combine 2., 3.)
 *** TODO O3 warnings
+*** TODO seperate heuristic and board
 ** ONGOING optimize heuristic 11/5~11/21
 ** ONGOING optimize dfs 11/5~11/21
 *** TODO use row and col to fill
@@ -29,15 +32,19 @@ CLOSED: [2015-10-20 二 19:54]
 * 5. misc
 ** TODO check how to use makefile implicit and some techiniques
 
+* record
 ==23312== Conditional jump or move depends on uninitialised value(s)
 ==23312==    at 0x804FA8F: Board::init(int, int, std::vector<std::vector<RowLimit, std::allocator<RowLimit> >, std::allocator<std::vector<RowLimit, std::allocator<RowLimit> > > >, std::vector<std::vector<ColLimit, std::allocator<ColLimit> >, std::allocator<std::vector<ColLimit, std::allocator<ColLimit> > > >, char*, int) (board.h:100)
 ==23312==    by 0x80492F2: main (nonogramReader.h:48)
 ==23312== 
 
-now(remove printboard, asprintf)
+
+
+v1.0
+Thu Oct 22 11:51:26 2015 +0800
 |       | 15x15 | 25x25 |
 |-------+-------+-------|
-|     1 |       | stuck |
+|     1 |       | 771   |
 |     2 |       | stuck |
 | 1~100 |  4.85 |       |
 | 1~200 | 18.26 |       |

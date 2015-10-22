@@ -19,7 +19,6 @@ using namespace std;
 #define DEBUG_PRINT(fmt, args...)
 #endif
 
-//TODO: ???WHAT IS THIS?
 #define saveAndExit(errorcode) {\
   saveResult();\
   isFailed = errorcode;\
@@ -35,7 +34,6 @@ inline void Board::no_solution(const char in[]){
     DEBUG_PRINT("no solution: %s\n", in);
     sprintf(tryFailedReason, "%s\n", in);
     tryFailed = true;
-    //failed in dfs searching TODO:
   }
 }
 inline void Board::no_solution(const char in[], line_type t, int i){//check answer failed
@@ -72,8 +70,8 @@ void Board::doHeuristic(){
   
   isLimitInit = true;
 
-  while(!isAllSolved()){//recursively do heuristic after no limit and grid to update
-    if(isFailed)//TODO: isfailed
+  while(!isAllSolved()){//do heuristic after no limit and grid to update
+    if(isFailed)//BUG: isfailed
       exit(isFailed);
     if(!doHeuristicInOneLine())
       break;
@@ -147,7 +145,7 @@ void Board::initialFillCol(int ci){
   }
   //changeNumQueue.push(change(COL, ci));
 }
-bool Board::doHeuristicInOneLine(){//TODO:Imporve
+bool Board::doHeuristicInOneLine(){//TODO:Optimize, merge queue into class member
   tryFailed = false; // TODO: why this is needed...
   priority_queue<change, vector<change>, change> changeQueue;
   for(int i = 0;i < r; i++)
@@ -191,7 +189,7 @@ bool Board::doHeuristicInOneLine(){//TODO:Imporve
   }
   return true;
 }
-bool Board::updateByHeuristic(line_type type, int line){
+bool Board::updateByHeuristic(line_type type, int line){//TODO: improve process
   int originalSetnum = alreadySetGridNumber;
   if(type == ROW){
     DEBUG_PRINT("updateHeuristic: row%d\n", line);
@@ -280,9 +278,9 @@ bool Board::updateLimitByLimit_row(int nowr){
     }
   }
 }
-bool Board::updateLimitByLimit_col(int nowc){//TODO: no zero?...
+bool Board::updateLimitByLimit_col(int nowc){
   int nfs, nls;
-  if(lim_col[nowc][0].isSolved()){//TODO:too many duplicate...
+  if(lim_col[nowc][0].isSolved()){//TODO:reduce duplicate...
     nfs = lim_col[nowc][0].fs;
     if(1 < lim_col[nowc].size()){
       nls = min(lim_col[nowc][1].ls-1-lim_col[nowc][0].l , lim_col[nowc][0].ls);
@@ -895,7 +893,7 @@ bool Board::checkAnswer(){
   return true;
 }
 
-void Board::doDFS(){//TODO: implement, do multiple answer
+void Board::doDFS(){
   if(isAllSolved() || isFailed)//if heuristic can't update anymore, do DFS
     return;
   solveMode = DFS;

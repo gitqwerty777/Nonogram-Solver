@@ -23,6 +23,12 @@ test: heu
 test15: heu
 	./heu -t -n 200 -s 15 < 15question.txt > trash15mul200
 
+test25: heu
+	./heu -t -s 15 < testdata/tourament1
+
+t1000: heu
+	./heu -t -s 15 < testdata/tour15
+
 nonoheu.o: nonoheu.cpp dfsboard.h board.h nonogramReader.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c
 board.o: board.cpp board.h dfsboard.h nonogramWriter.h
