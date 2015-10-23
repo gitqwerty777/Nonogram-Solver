@@ -9,8 +9,8 @@ class NonogramInputReader{
   int problemNum;
   FILE* f;
   int r, c;
-  vector< vector<struct RowLimit> > lim_row;
-  vector< vector<struct ColLimit> > lim_col;
+  vector< vector<struct Limit> > lim_row;
+  vector< vector<struct Limit> > lim_col;
   int size;
 
   NonogramInputReader(FILE* p, int size){
