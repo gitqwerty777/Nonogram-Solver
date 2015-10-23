@@ -854,8 +854,8 @@ bool Board::checkAnswer(){
     seq.clear();
     for(int j = 0; j < c; j++){
       if(b[i][j] == BLACK){
-	int count = 0;
-	while(j < c && b[i][j] == BLACK){
+	int count = 1;
+	while(j+1 < c && b[i][j+1] == BLACK){
 	  count++; j++;}
 	seq.push_back(count);
       }
@@ -874,8 +874,8 @@ bool Board::checkAnswer(){
     seq.clear();
     for(int j = 0; j < r; j++){
       if(b[j][i] == BLACK){
-	int count = 0;
-	while(j < r && b[j][i] == BLACK){
+	int count = 1;
+	while(j+1 < r && b[j+1][i] == BLACK){
 	  count++; j++;}
 	seq.push_back(count);
       }

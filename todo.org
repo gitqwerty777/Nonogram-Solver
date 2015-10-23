@@ -1,7 +1,5 @@
 schedule 10/15~11/21
 
-
-
 * 1. implementation
 ** make independent scanner
 *** DONE make scanner interface 10/21
@@ -38,7 +36,16 @@ CLOSED: [2015-10-20 二 19:54]
 ==23312==    by 0x80492F2: main (nonogramReader.h:48)
 ==23312== 
 
-
+add col dfs
+|       | 15x15 | 25x25 |
+|-------+-------+-------|
+|     1 |       | stuck |
+|     2 |       | stuck |
+| 1~100 |  1.66 |       |
+| 1~200 |  6.96 |       |
+| 1~290 | 41.16 |       |
+|  1000 | 38.32 |       |
+maybe doheuin... is too slow and backup cost is high
 
 v1.0
 Thu Oct 22 11:51:26 2015 +0800

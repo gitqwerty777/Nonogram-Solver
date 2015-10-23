@@ -44,8 +44,9 @@ struct Point{
 struct Line{
   line_type t;
   int i;
+  int index;//including r and c
   Line(){};
-  Line(line_type type, int index): t(type), i(index){};
+  Line(line_type type, int i, int index): t(type), i(i), index(index){}
   bool equals(line_type t, int i){
     return (this->t == t) && (this-> i == i);
   }
@@ -73,11 +74,11 @@ class NonogramWriterInterface;
 
 struct Board{
   Board(){tryFailedReason = new char[200];}
-  Board(int rr, int cc, vector< vector<struct RowLimit> > lr, vector< vector<struct ColLimit> > lc, char* n = NULL, int problemNum = 1){
+  Board(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
     tryFailedReason = new char[200];
     init(rr, cc, lr, lc, n, problemNum);
   }
-  void init(int rr, int cc, vector< vector<struct RowLimit> > lr, vector< vector<struct ColLimit> > lc, char* n = NULL, int problemNum = 1){
+  void init(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
     isLimitInit = false;
     r = rr;  c = cc;
     lim_row = lr; lim_col = lc;
@@ -129,8 +130,8 @@ struct Board{
   vector< vector<bool> > isupdate;//board
   bool isUpdate(int r, int c){return isupdate[r][c];}
   //TODO: need to use pointer instead of instance
-  vector< vector<struct RowLimit> > lim_row;
-  vector< vector<struct ColLimit> > lim_col;
+  vector< vector<struct Limit> > lim_row;
+  vector< vector<struct Limit> > lim_col;
   vector<int> change_row, change_col;
   //priority_queue<change, vector<change>, change> changeQueue; //TODO: implement
   vector<bool> solved_row, solved_col;
@@ -171,7 +172,7 @@ struct Board{
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
   void isLineSolved(line_type type, int line);
-  bool isAllSolved(){
+  bool isAllSolved(){//TODO: ???
     return (solvedLineNum == r + c);
   }
   bool checkAnswer();//TODO: use getLimitFromBoard 
