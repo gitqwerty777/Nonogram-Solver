@@ -20,12 +20,15 @@ class NonogramInputReader{
 
   void readInput(){
     char in[10000];//I think it's big enough
-    fscanf(f, "%d %d", &r, &c);
+    char* ptr;
+    if(fscanf(f, "%d %d", &r, &c) != 2){
+      return;
+    }
     lim_row.clear(); lim_col.clear();
     lim_row.resize(r);  lim_col.resize(c);
-    fgets(in, 10000, f);//dumb
+    ptr = fgets(in, 10000, f);//dumb
     for(int i = 0; i < r; i++){
-      fgets(in, 10000, f);
+      ptr = fgets(in, 10000, f);
       char *p;
       p = strtok(in, " ");
       while(p != NULL){
@@ -34,7 +37,7 @@ class NonogramInputReader{
       }
     }
     for(int i = 0; i < c; i++){
-      fgets(in, 10000, f);
+      ptr = fgets(in, 10000, f);
       char *p;
       p = strtok(in, " ");
       while(p != NULL){
@@ -50,13 +53,15 @@ class NonogramInputReader{
 
   void readInput_Tourament(){
     char in[10000];//I think it's big enough
+    char *ptr;
     r = size; c = size;
-    fscanf(f, "$%d", &problemNum);
+    if(fscanf(f, "$%d", &problemNum) != 1)
+      return;
     lim_row.clear(); lim_col.clear();
     lim_row.resize(r);  lim_col.resize(c);
-    fgets(in, 10000, f);//dumb
+    ptr = fgets(in, 10000, f);//dumb
     for(int i = 0; i < c; i++){
-      fgets(in, 10000, f);
+      ptr = fgets(in, 10000, f);
       char *p;
       p = strtok(in, " \t");
       while(p != NULL){
@@ -65,7 +70,7 @@ class NonogramInputReader{
       }
     }
     for(int i = 0; i < r; i++){
-      fgets(in, 10000, f);
+      ptr = fgets(in, 10000, f);
       char *p;
       p = strtok(in, " \t");
       while(p != NULL){

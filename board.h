@@ -1,9 +1,10 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <vector>
-#include <string.h>
 #include <queue>
 using namespace std;
 
@@ -109,8 +110,10 @@ struct Board{
       solved_col[i] = 0;
     }
 
-    if(name == NULL)
-      asprintf(&name, "nonogram");
+    if(name == NULL){
+      if(asprintf(&name, "nonogram") != 1)
+	exit(1);
+    }
     else
       name = n;
     isFailed = 0;
