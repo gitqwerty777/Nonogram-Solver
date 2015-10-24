@@ -33,7 +33,7 @@ test25: heu
 	./heu -t -s 25 < testdata/tourament1 > test25
 
 t1000: heu
-	./heu -t -s 15 < testdata/tour15-2
+	./heu -t -s 15 < testdata/tour15 
 
 nonoheu.o: nonoheu.cpp dfsboard.h board.h nonogramReader.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c

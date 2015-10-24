@@ -109,7 +109,6 @@ struct Board{
     }
     else
       name = n;
-    isFailed = 0;
     this->problemNum = problemNum;
   }
 
@@ -120,7 +119,6 @@ struct Board{
   int problemNum;
   char* name;
   int r, c;
-  int isFailed;//TODO: delete?
   bool isLimitInit;
   vector< vector<int> > b;//board
   vector< vector<bool> > isupdate;//board

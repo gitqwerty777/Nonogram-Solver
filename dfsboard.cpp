@@ -122,32 +122,6 @@ void DFSBoard::DoDFS(){//TODO: choose col
   }
 }
 
-void DFSBoard::checkSolve(){
-  for(int i = 0; i < r; i++)
-    if(!solved_row[i]){
-      bool isSolved = true;
-      for(int j = 0; j < c && isSolved; j++)
-	if(b[i][j] == SPACE)
-	  isSolved = false;
-      if(isSolved){
-	solved_row[i] = true;
-	solvedLineNum++;
-      }
-    }
-
-  for(int i = 0; i < c; i++)
-    if(!solved_col[i]){
-      bool isSolved = true;
-      for(int j = 0; j < r && isSolved; j++)
-	if(b[j][i] == SPACE)
-	  isSolved = false;
-      if(isSolved){
-	solved_col[i] = true;
-	solvedLineNum++;
-      }
-    }
-}
-
 void DFSBoard::getRowWithMinBranch(int dfsLineCount, vector<Line>& lineOrder){//TODO: RENAME, lineorder-checkequal, linear search used -> bool memorize
   int mini;
   line_type mint;
@@ -194,7 +168,7 @@ void DFSBoard::getRowWithMinBranch(int dfsLineCount, vector<Line>& lineOrder){//
   else
     lineOrder[dfsLineCount] = Line(mint, mini, r+mini);
 }
-bool DFSBoard::tryFillRowWithHeuristic(Line nowLine){
+bool DFSBoard::tryFillRowWithHeuristic(Line& nowLine){
   if(nowLine.t == ROW){
     limitFillers[nowLine.index].setLimit(lim_row[nowLine.i]);
   } else {
@@ -216,7 +190,6 @@ bool DFSBoard::tryFillRowWithHeuristic(Line nowLine){
   
   return isSuccess;
 }
-
 bool DFSBoard::tryFillRowbyFillStartHeuristic(Line& nowLine, vector<int>& fillStart){
   tryFailed = false;
 
@@ -258,12 +231,37 @@ bool DFSBoard::tryFillRowbyFillStartHeuristic(Line& nowLine, vector<int>& fillSt
   //puts("dfs with heursitic success");
   return true;
 }
+void DFSBoard::checkSolve(){
+  for(int i = 0; i < r; i++)
+    if(!solved_row[i]){
+      bool isSolved = true;
+      for(int j = 0; j < c && isSolved; j++)
+	if(b[i][j] == SPACE)
+	  isSolved = false;
+      if(isSolved){
+	solved_row[i] = true;
+	solvedLineNum++;
+      }
+    }
 
-void DFSBoard::Restore(Line& l){
+  for(int i = 0; i < c; i++)
+    if(!solved_col[i]){
+      bool isSolved = true;
+      for(int j = 0; j < r && isSolved; j++)
+	if(b[j][i] == SPACE)
+	  isSolved = false;
+      if(isSolved){
+	solved_col[i] = true;
+	solvedLineNum++;
+      }
+    }
+}
+
+void DFSBoard::Restore(const Line& l){
   //printf("restore %d\n", nowr);
   RestoreBoard(backupBoards[l.index]);
 }
-void DFSBoard::Backup(Line& l){
+void DFSBoard::Backup(const Line& l){
   BackupBoard(backupBoards[l.index]);
 }
 void DFSBoard::BackupBoard(Board &b){//TODO: need to add something?
@@ -277,7 +275,7 @@ void DFSBoard::BackupBoard(Board &b){//TODO: need to add something?
   b.solvedLineNum = this->solvedLineNum;
   b.alreadySetGridNumber = this->alreadySetGridNumber;
 }
-void DFSBoard::RestoreBoard(Board &b){
+void DFSBoard::RestoreBoard(const Board &b){
   this->b = b.b;
   this->lim_row = b.lim_row;
   this->lim_col = b.lim_col;
