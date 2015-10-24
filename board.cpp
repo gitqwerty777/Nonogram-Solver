@@ -790,8 +790,8 @@ void Board::saveSimpleResult(FILE* f){//TODO: abstract
 }
 void Board::saveFullResult(){
   setlocale(LC_ALL, "");
-  char *outputName = NULL;
-  asprintf(&outputName, "%s.out", name);
+  char outputName[100];
+  sprintf(outputName, "%s.out", name);
   fprintf(stderr, "saveresult %s\n", outputName);
   FILE* f = fopen(outputName, "w");
   if(f == NULL){
