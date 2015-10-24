@@ -42,17 +42,6 @@ struct Point{
   }
 };
 
-struct Line{
-  line_type t;
-  int i;
-  int index;//including r and c
-  Line(){};
-  Line(line_type type, int i, int index): t(type), i(i), index(index){}
-  bool equals(line_type t, int i){
-    return (this->t == t) && (this-> i == i);
-  }
-};
-
 class LineChanged{//TODO:
  public:
   line_type type;
@@ -83,6 +72,7 @@ struct Board{
     isLimitInit = false;
     r = rr;  c = cc;
     lim_row = lr; lim_col = lc;
+    
     b.resize(r);
     for(int i = 0; i < r; i++)
       b[i].resize(c);
@@ -136,7 +126,7 @@ struct Board{
   vector< vector<struct Limit> > lim_row;
   vector< vector<struct Limit> > lim_col;
   vector<int> change_row, change_col;
-  //priority_queue<change, vector<change>, change> changeQueue; //TODO: implement
+  //priority_queue<change, vector<change>, change> changeQueue; //TODO: implement change queue in class
   vector<bool> solved_row, solved_col;
 
   SOLVEMODE solveMode;
@@ -152,16 +142,16 @@ struct Board{
   bool doHeuristicInOneLine();
   bool updateByHeuristic(line_type, int);  
   void updateRowLimits(struct Point p, int v);//fill a new block, find other block can be updated or not
-  void updateColLimits(struct Point p, int v);
-  bool updateLimitByGrid_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
   bool updateLimitByGrid_row(int linei, int limiti, int i);
   bool updateLimitByLimit_row(int nowr);
+  void updateColLimits(struct Point p, int v);
+  bool updateLimitByGrid_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
   bool updateLimitByLimit_col(int nowc);
   //fill grids based on limit
   void initialFillRow(int i);
   void initialFillCol(int i);
-  void fillColByLimit(int);
   void fillRowByLimit(int);
+  void fillColByLimit(int);
   void fill_blank_row(int);
   void fill_blank_col(int);
   void fillGrid(int r, int c, int v);//fill single grid
@@ -175,7 +165,7 @@ struct Board{
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
   void isLineSolved(line_type type, int line);
-  bool isAllSolved(){//TODO: ???
+  bool isAllSolved(){//TODO: ??? use another way to store information
     return (solvedLineNum == r + c);
   }
   bool checkAnswer();//TODO: use getLimitFromBoard 
@@ -186,13 +176,13 @@ struct Board{
   void saveResult();
   void saveSimpleResult(FILE *f);
   void saveFullResult();
+
   void no_solution(const char[]);
   void no_solution(const char[], line_type t, int i);
 
   void doDFS();
 
   void setLimit(line_type t, int linei, Limit &l, int fs, int ls);
-  
 };
 
 
