@@ -81,6 +81,11 @@ void Board::doHeuristic(){
     if(!doHeuristicInOneLine())
       break;
   }
+  /*if(!isAllSolved()){
+    printBoard("beforeheu");
+    assert(!doHeuristicInOneLine());
+    printBoard("afterheu");
+    }*/
 }
 void Board::initialFillRow(int ri){//TODO: consider no limit in row and col
   int remain = c;
@@ -162,6 +167,7 @@ bool Board::doHeuristicInOneLine(){//TODO:Optimize, merge queue into class membe
   
   bool isChange = false;
   int previousChangeNum = 0;
+  int previousSetGrid = alreadySetGridNumber;
   int maxChangeNum = changeQueue.top().changeNum;
   while(!changeQueue.empty()){
     change ch = changeQueue.top();
@@ -198,30 +204,35 @@ bool Board::updateByHeuristic(line_type type, int line){//TODO: improve process
   int originalSetnum = alreadySetGridNumber;
   if(type == ROW){
     DEBUG_PRINT("updateHeuristic: row%d\n", line);
-    updateLimitByLimit_row(line);//
-    fillRowByLimit(line);//limits are updated by others, need to fillgrid
-
+    updateLimitByLimit_row(line);//limit
+    fillRowByLimit(line);//limits are updated by others, need to fillgrid //limit
+    //changed_row[line] = false;
     for(int j = 0; j < c; j++){//TODO: optimize
       if(b[line][j] != SPACE)
-	updateRowLimits(Point(line,j), b[line][j]);
+	updateRowLimits(Point(line,j), b[line][j]);//grid, limit
     }
     fill_blank_row(line);
 
-    updateLimitByLimit_row(line);//
-    fillRowByLimit(line);//limits are updated by others, need to fillgrid
+    //if(changed_row[line]){
+      updateLimitByLimit_row(line);
+      fillRowByLimit(line);
+      //changed_row[line] = false;
+      //}
   } else {
     DEBUG_PRINT("updateHeuristic: col%d\n", line);
     updateLimitByLimit_col(line);
     fillColByLimit(line);
-
+    //changed_col[line] = false;
     for(int j = 0; j < r; j++){
       if(b[j][line] != SPACE)
 	updateColLimits(Point(j, line), b[j][line]);
     }
     fill_blank_col(line);
-
-    updateLimitByLimit_col(line);
-    fillColByLimit(line);
+    //if(changed_col[line]){
+      updateLimitByLimit_col(line);
+      fillColByLimit(line);
+      //changed_col[line] = false;
+      //}
   }
   return originalSetnum != alreadySetGridNumber;//is really updated grid or not
 }
@@ -403,7 +414,6 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
   //    return true;
   int fs = lim_row[linei][limiti].fs;
   int ls = lim_row[linei][limiti].ls;
-  lim_row[linei][limiti].set_pos(fs, ls);//TODO: ???
   int fe = lim_row[linei][limiti].fe;
   int le = lim_row[linei][limiti].le;
   int l = lim_row[linei][limiti].l;
@@ -558,8 +568,10 @@ void Board::setLimit(line_type t, int linei, Limit &l, int fs, int ls){
   if(l.set_pos(fs, ls)){
     DEBUG_PRINT("setlimit %s %d = (%d, %d)\n", (t==ROW)?"row":"col", linei, fs, ls);
     if(t == ROW){
+      //changed_row[linei] = true;
       updateLimitByLimit_row(linei);
     } else {
+      //changed_col[linei] = true;
       updateLimitByLimit_col(linei);
     }
   }

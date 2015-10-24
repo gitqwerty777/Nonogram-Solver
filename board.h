@@ -91,13 +91,16 @@ struct Board{
     alreadySetGridNumber = 0;
     change_row.resize(r); change_col.resize(c);
     solved_row.resize(r); solved_col.resize(c);
+    changed_row.resize(r); changed_col.resize(c);
     for(int i = 0; i < r; i++){
       change_row[i] = 0;
       solved_row[i] = 0;
+      changed_row[i] = true;
     }
     for(int i = 0; i < c; i++){
       change_col[i] = 0;
       solved_col[i] = 0;
+      changed_col[i] = true;
     }
 
     if(name == NULL){
@@ -128,6 +131,7 @@ struct Board{
   vector<int> change_row, change_col;
   //priority_queue<change, vector<change>, change> changeQueue; //TODO: implement change queue in class
   vector<bool> solved_row, solved_col;
+  vector<bool> changed_row, changed_col;
 
   SOLVEMODE solveMode;
   bool tryFailed;
