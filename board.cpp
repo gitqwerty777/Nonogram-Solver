@@ -21,8 +21,7 @@ using namespace std;
 
 #define saveAndExit(errorcode) {\
   saveResult();\
-  isFailed = errorcode;\
-  exit(isFailed);      \
+  exit(errorcode);\
 }
  
 inline void Board::no_solution(const char in[]){
@@ -47,16 +46,6 @@ inline void Board::no_solution(const char in[], line_type t, int i){//check answ
   }
 }
 
-void Board::solveGame(){
-  doHeuristic();
-  doDFS();
-  if(checkAnswer())
-    printBoard("solved");
-  else
-    printBoard("failed to solve");
-  saveResult();
-}
-
 void Board::doHeuristic(){
   solveMode = HEURISTIC;
 
@@ -76,8 +65,6 @@ void Board::doHeuristic(){
       fillGrid(i, j, b[i][j]);*/
   
   while(!isAllSolved()){//do heuristic after no limit and grid to update
-    if(isFailed)//BUG: isfailed
-      exit(isFailed);
     if(!doHeuristicInOneLine())
       break;
   }
@@ -250,18 +237,19 @@ void Board::fillRowByLimit(int nowr){
   for(int i = lim_row[nowr][size-1].ls+lim_row[nowr][size-1].l; i < c; i++)
     fillGrid(nowr, i,WHITE);
 }
-void Board::fillColByLimit(int c){
-  int size = lim_col[c].size();
-  for(int i = 0; i < lim_col[c][0].fs; i++)
-    fillGrid(i, c, WHITE);
+void Board::fillColByLimit(int nowc){
+  DEBUG_PRINT("fillcolbylimit%d\n", nowc);
+  int size = lim_col[nowc].size();
+  for(int i = 0; i < lim_col[nowc][0].fs; i++)
+    fillGrid(i, nowc, WHITE);
   for(int i = 0; i < size-1; i++)
-    for(int j = lim_col[c][i].ls + lim_col[c][i].l; j < lim_col[c][i+1].fs; j++)
-      fillGrid(j, c, WHITE);
+    for(int j = lim_col[nowc][i].ls + lim_col[nowc][i].l; j < lim_col[nowc][i+1].fs; j++)
+      fillGrid(j, nowc, WHITE);
   for(int i = 0; i < size; i++)
-    for(int j = lim_col[c][i].ls; j <= lim_col[c][i].fe; j++)
-      fillGrid(j, c, BLACK);
-  for(int i = lim_col[c][size-1].ls+lim_col[c][size-1].l; i < r; i++)
-    fillGrid(i, c, WHITE);
+    for(int j = lim_col[nowc][i].ls; j <= lim_col[nowc][i].fe; j++)
+      fillGrid(j, nowc, BLACK);
+  for(int i = lim_col[nowc][size-1].ls+lim_col[nowc][size-1].l; i < r; i++)
+    fillGrid(i, nowc, WHITE);
 }
 
 bool Board::updateLimitByLimit_row(int nowr){
@@ -461,10 +449,10 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
   } 
   return true;
 }
-bool Board::in_limit_row(int nowr, int limiti, int nowc){
+inline bool Board::in_limit_row(int nowr, int limiti, int nowc){
   return (lim_row[nowr][limiti].fs <= nowc && lim_row[nowr][limiti].le >= nowc);  
 }
-bool Board::only_in_one_limit_row(int nowr, int nowc, int limiti){
+inline bool Board::only_in_one_limit_row(int nowr, int nowc, int limiti){
   bool inLimiti = false;
   for(int i = 0; i < lim_row[nowr].size(); i++){
     if(in_limit_row(nowr, i, nowc)){
@@ -526,10 +514,10 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
   }
   return true;
 }
-bool Board::in_limit_col(int nowc, int limiti, int nowr){
+inline bool Board::in_limit_col(int nowc, int limiti, int nowr){
   return (lim_col[nowc][limiti].fs <= nowr && lim_col[nowc][limiti].le >= nowr);  
 }
-bool Board::only_in_one_limit_col(int nowr, int nowc, int limiti){//TODO: move to class limit 
+inline bool Board::only_in_one_limit_col(int nowr, int nowc, int limiti){//TODO: move to class limit 
   for(int i = 0; i < lim_col[nowc].size(); i++)
     if(i != limiti && in_limit_col(nowc, i, nowr))
       return false;
@@ -577,12 +565,12 @@ void Board::setLimit(line_type t, int linei, Limit &l, int fs, int ls){
   }
 }
 void Board::fillGrid(int r, int c, int v){
-  if(r < 0 || c < 0 || r >= this->r || c >= this->c){
-    DEBUG_PRINT("fillgrid out of range\n");
+  //commented because it cannot happen
+  /*if(r < 0 || c < 0 || r >= this->r || c >= this->c){
     sprintf(tryFailedReason, "fillgrid out of range");
-    tryFailed = true;
+    no_solution(tryFailedReason);
     return;
-  }
+    }*/
   if(b[r][c] == SPACE){
     DEBUG_PRINT("fillGrid (%d, %d) = %s\n", r, c, (v==1)?"BLACK":"WHITE");
     b[r][c] = v;
@@ -601,15 +589,8 @@ void Board::fillGrid(int r, int c, int v){
       isupdate[r][c] = true;
     }
   } else if(b[r][c] != v){
-    if(solveMode == HEURISTIC){
-      fprintf(stderr, "no solution: ");
-      fprintf(stderr, "illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
-      saveAndExit(2);
-    } else if(solveMode == DFS){
-      DEBUG_PRINT("fill grid no the same value\n");
-      sprintf(tryFailedReason, "(%d, %d) fill twice(%d to %d)\n", r, c, b[r][c], v);
-      tryFailed = true;    
-    }
+    sprintf(tryFailedReason, "illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
+    no_solution(tryFailedReason);
   }
 }
 void Board::isLineSolved(line_type type, int line){  //check whole line is solved or not
@@ -893,7 +874,7 @@ bool Board::checkAnswer(){
 }
 
 void Board::doDFS(){
-  if(isAllSolved() || isFailed)//if heuristic can't update anymore, do DFS
+  if(isAllSolved())//if heuristic can't update anymore, do DFS
     return;
   solveMode = DFS;
   DFSBoard dfsboard(*this);

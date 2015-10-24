@@ -76,7 +76,6 @@ void parseArgument(int argc, char** argv){
 int main(int argc, char** argv){
   setlocale(LC_ALL, "");
   parseArgument(argc, argv);
-  clock_t beginTime = clock();
 
   struct Board board;
 
@@ -88,7 +87,8 @@ int main(int argc, char** argv){
     writer = new NonogramWriter;
   }
   board.setWriter(writer);
-
+  
+  clock_t beginTime = clock();
   for(int i = 0; i < problemNum; i++){
     fprintf(stderr, "To solve problem %d\n", i);
     ir.readInputAndGetBoard(&board, problemName, isTourament);

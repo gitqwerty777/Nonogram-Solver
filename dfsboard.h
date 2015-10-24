@@ -20,7 +20,7 @@ struct Line{
 class LimitFiller{
 public:
   LimitFiller(){fillStart.clear();}
-  LimitFiller(vector<Limit> limit):l(limit){ isInit = true;}
+  LimitFiller(vector<Limit>& limit):l(limit){ isInit = true;}
 
   bool isInit;
   vector<Limit> l;
@@ -51,10 +51,10 @@ public:
   vector<Board> backupBoards;
   vector<Line> lineOrder;
 
-  void Restore(Line&);
-  void Backup(Line&);
+  void Restore(const Line&);
+  void Backup(const Line&);
   void BackupBoard(Board &b);
-  void RestoreBoard(Board &b);
+  void RestoreBoard(const Board &b);
 
   //simple DFS
   void DoSimpleDFS();
@@ -66,7 +66,7 @@ public:
   void DoDFS();
   void getRowWithMinBranch(int nowr, vector<Line>& lineOrder);
   
-  bool tryFillRowWithHeuristic(Line);
+  bool tryFillRowWithHeuristic(Line&);
   void checkSolve();
   bool tryFillRowbyFillStartHeuristic(Line&, vector<int>& fillStart);
 };
