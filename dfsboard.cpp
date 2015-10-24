@@ -77,27 +77,12 @@ bool LimitFiller::getNextFillStartbyFillStart(){
   //printf("row %d: cannot find next fillstart", nowr);
   return false;
 }
-
 bool LimitFiller::isLimitLegal(){
   for(int i = 0; i < l.size()-1; i++)
     if(fillStart[i] + l[i].l >= fillStart[i+1])
       return false;
   return true;
 }
-
-bool DFSBoard::checkColumns(){
-  return true;//assume is correct
-  bool isLegal = true;
-  for(int i = 0; i < c && isLegal; i++)
-    isLegal = isLegal && checkAvailableCol(i);
-  return isLegal;
-}
-bool DFSBoard::checkAvailableCol(int nowc){//not implement yet
-  for(int i = 0; i < r; i++){
-    
-  }
-}
-
 
 //DFS with heuristic
 void DFSBoard::DoDFS(){//TODO: choose col
@@ -232,28 +217,6 @@ bool DFSBoard::tryFillRowWithHeuristic(Line nowLine){
   return isSuccess;
 }
 
-/*void LimitFiller::fillLimitByFillStart(DFSBoard* b, Line &nowLine){
-  int limitNum = l.size();
-
-  if(nowLine.t == ROW){
-  int nowr = nowLine.i;
-  for(int i = 0; i < limitNum; i++)
-  for(int j = fillStart[i]; j < fillStart[i]+l[i].l; j++)
-  b->fillGrid(nowr, j, BLACK);
-  for(int i = 0; i < b->c; i++)
-  if(b->b[nowr][i] == SPACE)
-  b->fillGrid(nowr, i, WHITE);
-  } else {
-  int nowc = nowLine.i;
-  for(int i = 0; i < limitNum; i++)
-  for(int j = fillStart[i]; j < fillStart[i]+l[i].l; j++)
-  b->fillGrid(j, nowc, BLACK);
-  for(int i = 0; i < b->c; i++)
-  if(b->b[i][nowc] == SPACE)
-  b->fillGrid(i, nowc, WHITE);
-  }
-  }*/
-
 bool DFSBoard::tryFillRowbyFillStartHeuristic(Line& nowLine, vector<int>& fillStart){
   tryFailed = false;
 
@@ -293,19 +256,6 @@ bool DFSBoard::tryFillRowbyFillStartHeuristic(Line& nowLine, vector<int>& fillSt
     return checkAnswer();
   }
   //puts("dfs with heursitic success");
-  return true;
-}
-
-bool DFSBoard::isDFSAnswerCorrect(){//TODO: DELETE
-  for(int i = 0; i < c; i++){
-    vector<int> limitc = getLimitFromBoard_col(i);
-    if(limitc.size() != lim_col[i].size())
-      return false;
-    for(int j = 0; j < lim_col[i].size(); j++)
-      if(limitc[j] != lim_col[i][j].l)
-	return false;
-  }
-  printBoard("find dfs answer!");
   return true;
 }
 

@@ -1,12 +1,12 @@
 #include "board.h"
 #include "dfsboard.h"
 #include "nonogramWriter.h"
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 #include <locale.h>
 #define INF 2147483647
 
@@ -70,6 +70,11 @@ void Board::doHeuristic(){
   
   isLimitInit = true;
 
+  /*for(int i = 0; i < r; i++)
+    for(int j = 0; j < c; j++)
+      if(b[i][j] != SPACE)
+      fillGrid(i, j, b[i][j]);*/
+  
   while(!isAllSolved()){//do heuristic after no limit and grid to update
     if(isFailed)//BUG: isfailed
       exit(isFailed);
@@ -482,40 +487,29 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
     DEBUG_PRINT("updatelimitbygrid_col (%d, %d), limit%d, black\n", nowr, linei, limiti);
     if(only_in_one_limit_col(nowr, linei, limiti)){    //find sequences
       int seqs = nowr, seqe = nowr;
-      while(seqs-1 >= 0 && b[seqs-1][linei] == BLACK){
+      while(seqs-1 >= 0 && b[seqs-1][linei] == BLACK)
 	seqs--;
-      }
-      while(seqe+1 < r && b[seqe+1][linei] == BLACK){
+      while(seqe+1 < r && b[seqe+1][linei] == BLACK)
 	seqe++;
-      }
       fs = max(fs, seqe-l+1);//最左解右移
       ls = min(ls, seqs);//最右解左移
-      if(fs > ls){
-	DEBUG_PRINT("update black grid sequence(%d~%d, %d): limit=(%d, %d)\n", seqs, seqe, linei, fs, ls);
-	sprintf(tryFailedReason, "fs > ls at col %d", linei);
-	tryFailed = true;
-	return false;
-      }
-      DEBUG_PRINT("update black grid sequence(%d~%d, %d): limit=(%d, %d)\n", seqs, seqe, linei, fs, ls);
     }
-  } else if(v == WHITE){
-    while(fs <= nowr && nowr < fs + l){
+  } else{ //white
+    while(fs <= nowr && nowr < fs + l)
       fs++;
-    }
-    while(ls <= nowr && nowr < ls + l){
+    while(ls <= nowr && nowr < ls + l)
       ls--;
-    }
   }
-  if(fs > ls){//impossible...
-    char s[1000];
-    sprintf(s, "%d col %dth limit (%d, %d) -> fs %d > ls %d\n", linei, limiti, lim_col[linei][limiti].fs, lim_col[linei][limiti].fs, fs, ls);
-    no_solution(s);
+  if(fs > ls){
+    sprintf(tryFailedReason, "%d col %dth limit (%d, %d) -> fs %d > ls %d\n", linei, limiti, lim_col[linei][limiti].fs, lim_col[linei][limiti].fs, fs, ls);
+    DEBUG_PRINT(tryFailedReason);
+    no_solution(tryFailedReason);
     return false;
   }
-  if(lim_col[linei][limiti].fs != fs || lim_col[linei][limiti].ls != ls){
+  /*if(lim_col[linei][limiti].fs != fs || lim_col[linei][limiti].ls != ls){
     DEBUG_PRINT("use grid(%d, %d) to update lim_col[%d][%d]: (%d, %d) ", nowr, linei, linei, limiti,   lim_col[linei][limiti].fs,   lim_col[linei][limiti].ls);
     DEBUG_PRINT("-> (%d, %d)\n", fs, ls);
-  }
+    }*/
   setLimit(COL, linei, lim_col[linei][limiti], fs, ls);
   if(fs == ls){
     setColLimitSolved(linei, limiti);
@@ -525,18 +519,11 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
 bool Board::in_limit_col(int nowc, int limiti, int nowr){
   return (lim_col[nowc][limiti].fs <= nowr && lim_col[nowc][limiti].le >= nowr);  
 }
-bool Board::only_in_one_limit_col(int nowr, int nowc, int limiti){
-  bool inLimiti = false;
-  for(int i = 0; i < lim_col[nowc].size(); i++){
-    if(in_limit_col(nowc, i, nowr)){
-      if(i != limiti)
-	return false;
-      else
-	inLimiti = true;
-    }
-  }
-  return inLimiti;
-  //return ((limiti == 0) || !in_limit_col(nowc, limiti-1, nowr)) && (in_limit_col(nowc, limiti, nowr)) && ((limiti == lim_col[nowc].size()-1) || !in_limit_col(nowc, limiti+1, nowr));
+bool Board::only_in_one_limit_col(int nowr, int nowc, int limiti){//TODO: move to class limit 
+  for(int i = 0; i < lim_col[nowc].size(); i++)
+    if(i != limiti && in_limit_col(nowc, i, nowr))
+      return false;
+  return in_limit_col(nowc, limiti, nowr);
 }
 
 void Board::setColLimitSolved(int linei, int limiti){

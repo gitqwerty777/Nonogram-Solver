@@ -3,33 +3,42 @@
 
 #include "board.h"
 #include "unistd.h"
-#include "assert.h"
+#include "cassert"
 class DFSBoard;
+
+struct Line{
+  line_type t;
+  int i;
+  int index;//including r and c
+  Line(){};
+  Line(line_type type, int i, int index): t(type), i(i), index(index){}
+  bool equals(line_type t, int i){
+    return (this->t == t) && (this-> i == i);
+  }
+};
 
 class LimitFiller{
 public:
   LimitFiller(){fillStart.clear();}
   LimitFiller(vector<Limit> limit):l(limit){ isInit = true;}
+
   bool isInit;
   vector<Limit> l;
   vector<int> fillStart;
+  
   bool isInited(){return isInit;}
   void setLimit(vector<Limit>& limits){l = (limits); isInit = true;}
   void destroy(){isInit = false; fillStart.clear();}
+  
   bool getNextFillStart();
   bool getNextFillStartbyFillStart();
   bool isLimitLegal();
-  //void fillLimitByFillStart(DFSBoard* b, Line&);
 };
 
 class DFSBoard: public Board{
 public:
   DFSBoard(Board& b): Board(b){//inherit
     printBoard("before DFS");
-    /*for(int i = 0; i < r; i++)
-      limitFillers.push_back(LimitFiller(lim_row[i]));
-    for(int i = 0; i < c; i++)
-    limitFillers.push_back(LimitFiller(lim_col[i]));*/
     limitFillers.resize(r+c);
     backupBoards.resize(r+c);
     isFilled.resize(r+c);
@@ -49,24 +58,17 @@ public:
 
   //simple DFS
   void DoSimpleDFS();
-  bool isDFSAnswerCorrect();
   
   bool tryFillRow(int);
   void FillRowbyFillStart(int, vector<int>&);
   
-  bool checkColumns();
-  bool checkAvailableCol(int);
-
   //DFS with heuristic
   void DoDFS();
   void getRowWithMinBranch(int nowr, vector<Line>& lineOrder);
   
   bool tryFillRowWithHeuristic(Line);
-  bool tryFillRowbyFillStartHeuristic(Line&, vector<int>& fillStart);
-
-  bool isRowLegal(vector<int>& fillStart, int nowr);
-
   void checkSolve();
+  bool tryFillRowbyFillStartHeuristic(Line&, vector<int>& fillStart);
 };
 
 #endif
