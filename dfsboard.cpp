@@ -96,10 +96,10 @@ void DFSBoard::DoDFS(){//TODO: choose col
   getRowWithMinBranch(dfsLineCount, lineOrder);
   while(!checkAnswer()){
     Line nowLine = lineOrder[dfsLineCount];
-    printf("now order:\n");
+    /*printf("now order:\n");
     for(int i = 0; i < dfsLineCount; i++)
       printf("%s%d ", lineOrder[i].t==ROW?"row":"col", lineOrder[i].i);
-    puts("");
+      puts("");*/
     if(!tryFillRowWithHeuristic(nowLine)){//try all possibilities to fill the row, will filling next answer after previous called
       if(dfsLineCount == 0){
 	puts("no solution:cannot fill first row");
