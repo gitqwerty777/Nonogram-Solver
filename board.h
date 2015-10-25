@@ -157,6 +157,7 @@ struct Board{
   void fill_blank_row(int);
   void fill_blank_col(int);
   void fillGrid(int r, int c, int v);//fill single grid
+  void fillGrid_Solved(int r, int c, int v);//fill single grid
   //check the relationship between grid and limit
   bool in_limit_col(int linei, int limiti, int i);//whether the block would only be in specified limit
   bool in_limit_row(int linei, int limiti, int i);

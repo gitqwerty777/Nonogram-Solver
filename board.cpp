@@ -228,13 +228,15 @@ void Board::fillRowByLimit(int nowr){
   int size = lim_row[nowr].size();
   for(int i = 0; i < lim_row[nowr][0].fs; i++)
     fillGrid(nowr,i, WHITE);
-  for(int i = 0; i < size-1; i++)
-    for(int j = lim_row[nowr][i].ls + lim_row[nowr][i].l; j < lim_row[nowr][i+1].fs; j++)
+  for(int i = 0; i < size-1; i++){
+    for(int j = lim_row[nowr][i].le+1; j < lim_row[nowr][i+1].fs; j++)
       fillGrid( nowr,j, WHITE);
-  for(int i = 0; i < size; i++)
     for(int j = lim_row[nowr][i].ls; j <= lim_row[nowr][i].fe; j++)
       fillGrid( nowr,j, BLACK);
-  for(int i = lim_row[nowr][size-1].ls+lim_row[nowr][size-1].l; i < c; i++)
+  }
+  for(int j = lim_row[nowr][size-1].ls; j <= lim_row[nowr][size-1].fe; j++)
+    fillGrid( nowr,j, BLACK);
+  for(int i = lim_row[nowr][size-1].le+1; i < c; i++)
     fillGrid(nowr, i,WHITE);
 }
 void Board::fillColByLimit(int nowc){
@@ -284,7 +286,7 @@ bool Board::updateLimitByLimit_row(int nowr){
 }
 bool Board::updateLimitByLimit_col(int nowc){
   int nfs, nls;
-  if(lim_col[nowc][0].isSolved()){//TODO:reduce duplicate...
+  if(!lim_col[nowc][0].isSolved()){//TODO:reduce duplicate...
     nfs = lim_col[nowc][0].fs;
     if(1 < lim_col[nowc].size()){
       nls = min(lim_col[nowc][1].ls-1-lim_col[nowc][0].l , lim_col[nowc][0].ls);
@@ -393,7 +395,7 @@ void Board::updateRowLimits(struct Point p, int v){//if point only in one limit,
   //if(isUpdate(p.r, p.c))
   //return;
   for(int j = 0; j < lim_row[p.r].size(); j++)
-    if(in_limit_row(p.r, j, p.c))
+    if(!lim_row[p.r][j].isSolved() && in_limit_row(p.r, j, p.c))
       updateLimitByGrid_row(p.r, j, p.c);
 }
 bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
@@ -470,7 +472,7 @@ void Board::updateColLimits(struct Point p, int v){
   //return;
   DEBUG_PRINT("updatelimit_col(%d, %d)\n", p.r, p.c);
   for(int j = 0; j < lim_col[p.c].size(); j++)
-    if(in_limit_col(p.c, j, p.r))
+    if(!lim_col[p.c][j].isSolved() && in_limit_col(p.c, j, p.r))
       updateLimitByGrid_col(p.c, j, p.r);
 }
 bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, ls to get correct ans
@@ -593,70 +595,48 @@ void Board::fillGrid(int r, int c, int v){
     no_solution(tryFailedReason);
   }
 }
+
+void Board::fillGrid_Solved(int r, int c, int v){
+  DEBUG_PRINT("fillGrid (%d, %d) = %s\n", r, c, (v==1)?"BLACK":"WHITE");
+  b[r][c] = v;
+  change_row[r]++;
+  change_col[c]++;
+  alreadySetGridNumber++;
+  isupdate[r][c] = true;
+}
+
 void Board::isLineSolved(line_type type, int line){  //check whole line is solved or not
   //DEBUG_PRINT("islinesolved %s-%d\n", type==ROW?"row":"col", line);
   if(type == ROW){//row
     if(solved_row[line])//already solved...
       return;
+    for(int i = 0; i < lim_row[line].size(); i++)
+      if(!lim_row[line][i].isSolved())//not solved yet, return
+	return;
 
-    bool allsolve = true;
-    for(int i = 0; i < lim_row[line].size(); i++){
-      if(lim_row[line][i].isSolved())
-	continue;
-      else{
-	allsolve = false;
-	break;
-      }
-    }
-
-    if(allsolve){
-      DEBUG_PRINT("%d row all solve\n", line);
-      solved_row[line] = true;
-      solvedLineNum++;
-      int nowi = 0; int nowc = 0;
-      while(nowi < lim_row[line].size() && nowc < c){
-	if(nowc == lim_row[line][nowi].fs){
-	  for(int i = 0; i < lim_row[line][nowi].l; i++)
-	    fillGrid(line, nowc++, BLACK);
-	  nowi++;
-	} else
-	  fillGrid(line, nowc++, WHITE);
-      }
-      for(int i = nowc; i < c; i++)
-	fillGrid(line, i, WHITE);
-      printBoard("solve row ");
-    }
+    DEBUG_PRINT("%d row all solve\n", line);
+    solved_row[line] = true;
+    solvedLineNum++;
+    int nowi = 0; int nowc = 0;
+    for(int i = 0; i < c; i++)//TODO: fillgrid_solved do not update col limit
+      if(b[line][i] == SPACE)
+	fillGrid_Solved(line, i, WHITE);
+    printBoard("solve row ");
   } else if (type == COL) {//col
     if(solved_col[line])
       return;
-    bool allsolve = true;
-    for(int i = 0; i < lim_col[line].size(); i++){
-      if(lim_col[line][i].isSolved())
-	continue;
-      else{
-	allsolve = false;
-	break;
-      }
-    }
+    for(int i = 0; i < lim_col[line].size(); i++)
+      if(!lim_col[line][i].isSolved())
+	return;
 
-    if(allsolve){
-      DEBUG_PRINT("%d col all solve\n", line);
-      solved_col[line] = true;
-      solvedLineNum++;
-      int nowi = 0; int nowr = 0;
-      while(nowi < lim_col[line].size() && nowr < r){
-	//DEBUG_PRINT("nowr %d\n", nowr);
-	if(nowr == lim_col[line][nowi].fs){
-	  for(int i = 0; i < lim_col[line][nowi].l; i++)
-	    fillGrid(nowr++, line, BLACK);
-	  nowi++;
-	} else
-	  fillGrid(nowr++, line, WHITE);
-      }
-      for(int i = nowr; i < r; i++)
-	fillGrid(i, line, WHITE);
-      printBoard("solve col");
-    }
+    DEBUG_PRINT("%d col all solve\n", line);
+    solved_col[line] = true;
+    solvedLineNum++;
+    int nowi = 0; int nowr = 0;
+    for(int i = 0; i < r; i++)
+      if(b[i][line] == SPACE)
+	fillGrid_Solved(i, line, WHITE);
+    printBoard("solve col");
   }
 }
 
@@ -686,7 +666,6 @@ vector<int> Board::getLimitFromBoard_col(int nowc){
   }
   return limit;
 }
-
 
 wchar_t boardchar[3][20] = {L" ", L"\u25A0", L"\u25A1"};//space black white
 wchar_t cl[] = L"\n";
