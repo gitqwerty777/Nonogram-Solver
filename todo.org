@@ -1,30 +1,30 @@
 schedule 10/15~11/21
 
-* 1. implementation
-** make independent scanner
+* DONE 1. implementation
+** DONE make independent scanner
 *** DONE make scanner interface 10/21
 CLOSED: [2015-10-20 二 19:54]
 *** DONE test by original data 10/22
 CLOSED: [2015-10-20 二 19:54]
-** make independent printer
+** DONE make independent printer
 *** DONE make printer interface 10/28
 CLOSED: [2015-10-20 二 19:54]
 *** DONE test by original data 10/29
 CLOSED: [2015-10-20 二 19:54]
-** TODO misc
-*** TODO record solve time
 * 2. test
-** TODO test problems by datagen.py 
+** TODO test correctness
 *** ONGOING if there's wrong problem, record and analyze 11/5
 ** TODO test speed
 *** ONGOING calculate worse case and record it 11/5
 * 3. optimization 
 ** ONGOING refact 10/15~10/30(simple), 11/5~11/21(combine 2., 3.)
-*** TODO O3 warnings
+*** DONE O3 warnings
+CLOSED: [2015-10-25 日 11:49]
 *** TODO seperate heuristic and board
 ** ONGOING optimize heuristic 11/5~11/21
 ** ONGOING optimize dfs 11/5~11/21
-*** TODO use row and col to fill
+*** DONE use row and col to fill
+CLOSED: [2015-10-25 日 11:49]
 * 4. analyze
 ** ONGOING 1. nonogram papaers 10/15~10/30
 * 5. misc
@@ -35,6 +35,17 @@ CLOSED: [2015-10-20 二 19:54]
 ==23312==    at 0x804FA8F: Board::init(int, int, std::vector<std::vector<RowLimit, std::allocator<RowLimit> >, std::allocator<std::vector<RowLimit, std::allocator<RowLimit> > > >, std::vector<std::vector<ColLimit, std::allocator<ColLimit> >, std::allocator<std::vector<ColLimit, std::allocator<ColLimit> > > >, char*, int) (board.h:100)
 ==23312==    by 0x80492F2: main (nonogramReader.h:48)
 ==23312== 
+
+fix updatelimitbylimit_col bug
+|       | 15x15 | 25x25                     |
+|-------+-------+---------------------------|
+|     1 |       | 90.08(row) stuck(row+col) |
+|     2 |       | 0(row) 2.3(row+col)       |
+| 1~100 |  0.62 |                           |
+| 1~200 |  2.54 |                           |
+| 1~290 |  17.6 |                           |
+|  1000 | 13.72 |                           |
+need to find why 25x25 would stuck(it's fine if only use row dfs)
 
 add col dfs
 |       | 15x15 | 25x25 |

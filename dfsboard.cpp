@@ -3,44 +3,6 @@
 #include <cstdlib>
 #define INF 2147483647
 
-/*void DFSBoard::DoSimpleDFS(){//Simple DFS, without heuristic, not used
-  puts("dosimpleDFS");
-  int nowr = 0;
-  while(nowr <= r){
-    if(!tryFillRow(nowr)){//try all possibilities to fill the row, will filling next answer after previous called
-      if(nowr == 0)//all possibilities in row nowr are failed, recover board to previous row(nowr-1)
-	break;
-      lastfillStart[nowr].clear();
-      Restore(--nowr);
-    } else {// fill answer success, continue filling next row
-      nowr++;
-      if(nowr == r)//complete, check answer again
-	if(isDFSAnswerCorrect())
-	  return;
-	else
-	  Restore(--nowr);
-    }
-  }
-  }
-bool DFSBoard::tryFillRow(int nowr){//is vector copy by reference?
-  vector<int> fillStart;
-  printf("fillRow%d\n", nowr);
-  if(!getNextLegalFillStart(fillStart, nowr))
-    return false;
-
-  BackupBoard(backupBoards[nowr]);
-  bool isSuccess = false;
-  do{
-    FillRowbyFillStart(nowr, fillStart);
-    if(checkColumns()){//check available
-      isSuccess = true;
-    }
-  } while(!isSuccess && getNextFillStart(nowr, fillStart));
-
-  lastfillStart[nowr] = fillStart;
-  return isSuccess;
-}*/
-
 bool LimitFiller::getNextFillStart(){
   if(fillStart.size() == 0){//this row is not tried yet, return original fs
     fillStart.resize(l.size());
@@ -85,15 +47,15 @@ bool LimitFiller::isLimitLegal(){
 }
 
 //DFS with heuristic
-void DFSBoard::DoDFS(){//TODO: choose col
+void DFSBoard::DoDFS(){
   //choose an answer of the line with minimum possible answer() -> use heuristic to fill board -> check other is legal or not -> if legal, next line; else, refill the current line
+  puts("doDFS");
   for(int i = 0; i < r+c; i++)
     isFilled[i] = false;
-  puts("doDFS");
   lineOrder.clear();
   lineOrder.resize(r+c);
   int dfsLineCount = 0;
-  getRowWithMinBranch(dfsLineCount, lineOrder);
+  getLineWithMinBranch(dfsLineCount, lineOrder);
   while(!checkAnswer()){
     Line nowLine = lineOrder[dfsLineCount];
     /*printf("now order:\n");
@@ -114,7 +76,7 @@ void DFSBoard::DoDFS(){//TODO: choose col
 	return;
       isFilled[nowLine.index] = true;
       dfsLineCount++;
-      getRowWithMinBranch(dfsLineCount, lineOrder);//get next row index
+      getLineWithMinBranch(dfsLineCount, lineOrder);//get next row index
     }
   }
   if(!checkAnswer()){
@@ -122,7 +84,7 @@ void DFSBoard::DoDFS(){//TODO: choose col
   }
 }
 
-void DFSBoard::getRowWithMinBranch(int dfsLineCount, vector<Line>& lineOrder){//TODO: RENAME, lineorder-checkequal, linear search used -> bool memorize
+void DFSBoard::getLineWithMinBranch(int dfsLineCount, vector<Line>& lineOrder){//TODO: RENAME
   int mini;
   line_type mint;
   long minv;
@@ -190,11 +152,10 @@ bool DFSBoard::tryFillRowWithHeuristic(Line& nowLine){
   
   return isSuccess;
 }
-bool DFSBoard::tryFillRowbyFillStartHeuristic(Line& nowLine, vector<int>& fillStart){
+bool DFSBoard::tryFillRowbyFillStartHeuristic(const Line& nowLine, const vector<int>& fillStart){
   tryFailed = false;
 
   /* fill row */
-  //fillLimitByFillStart(this, nowLine);//TODO: fillstart is already in limitfillers TODO: implement fillLimitByFillStart
   if(nowLine.t == ROW){
     int nowr = nowLine.i;
     int limitNum = lim_row[nowr].size();
@@ -216,11 +177,11 @@ bool DFSBoard::tryFillRowbyFillStartHeuristic(Line& nowLine, vector<int>& fillSt
   }
   
   /* try heuristic */
-  while(!isAllSolved() && !tryFailed)//TODO: no need to test tryfailed because it's checked in doheu...
-    if(!doHeuristicInOneLine())
+  while(!isAllSolved() && !tryFailed)
+    if(!doHeuristicByLine())
       break;
   if(tryFailed){//find contradiction when updating heuristic, restore
-    //printf("try fill: failed [%s], restore %d\n", tryFailedReason, nowr);
+    DEBUG_PRINT("try fill: failed [%s], restore %d\n", tryFailedReason, nowLine.i);
     return false;
   }
 

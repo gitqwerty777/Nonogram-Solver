@@ -56,19 +56,13 @@ public:
   void BackupBoard(Board &b);
   void RestoreBoard(const Board &b);
 
-  //simple DFS
-  void DoSimpleDFS();
-  
-  bool tryFillRow(int);
-  void FillRowbyFillStart(int, vector<int>&);
-  
   //DFS with heuristic
   void DoDFS();
-  void getRowWithMinBranch(int nowr, vector<Line>& lineOrder);
+  void getLineWithMinBranch(int nowr, vector<Line>& lineOrder);
   
   bool tryFillRowWithHeuristic(Line&);
   void checkSolve();
-  bool tryFillRowbyFillStartHeuristic(Line&, vector<int>& fillStart);
+  bool tryFillRowbyFillStartHeuristic(const Line&, const vector<int>& fillStart);
 };
 
 #endif

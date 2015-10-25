@@ -8,6 +8,13 @@
 #include <queue>
 using namespace std;
 
+#ifdef __DEBUG__
+#define DEBUG_PRINT(fmt, args...)  \
+  fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, __LINE__, __FUNCTION__, ##args)
+#else /* Don't do anything in non-debug builds */
+#define DEBUG_PRINT(fmt, args...)
+#endif
+
 enum chessType{WHITE=2, BLACK=1, SPACE=0};
 enum line_type{ROW, COL};
 enum SOLVEMODE{HEURISTIC, DFS};
@@ -141,7 +148,7 @@ struct Board{
   void solveGame();
   
   void doHeuristic();
-  bool doHeuristicInOneLine();
+  bool doHeuristicByLine();
   bool updateByHeuristic(line_type, int);  
   void updateRowLimits(struct Point p, int v);//fill a new block, find other block can be updated or not
   bool updateLimitByGrid_row(int linei, int limiti, int i);

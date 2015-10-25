@@ -12,13 +12,6 @@
 
 using namespace std;
 
-#ifdef __DEBUG__
-#define DEBUG_PRINT(fmt, args...)  \
-  fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, __LINE__, __FUNCTION__, ##args)
-#else /* Don't do anything in non-debug builds */
-#define DEBUG_PRINT(fmt, args...)
-#endif
-
 #define saveAndExit(errorcode) {\
   saveResult();\
   exit(errorcode);\
@@ -65,12 +58,12 @@ void Board::doHeuristic(){
       fillGrid(i, j, b[i][j]);*/
   
   while(!isAllSolved()){//do heuristic after no limit and grid to update
-    if(!doHeuristicInOneLine())
+    if(!doHeuristicByLine())
       break;
   }
   /*if(!isAllSolved()){
     printBoard("beforeheu");
-    assert(!doHeuristicInOneLine());
+    assert(!doHeuristicByLine());
     printBoard("afterheu");
     }*/
 }
@@ -142,7 +135,7 @@ void Board::initialFillCol(int ci){
   }
   //changeNumQueue.push(change(COL, ci));
 }
-bool Board::doHeuristicInOneLine(){//TODO:Optimize, merge queue into class member
+bool Board::doHeuristicByLine(){//TODO:Optimize, merge queue into class member
   tryFailed = false; // TODO: why this is needed...
   priority_queue<change, vector<change>, change> changeQueue;
   for(int i = 0;i < r; i++)
@@ -400,52 +393,38 @@ void Board::updateRowLimits(struct Point p, int v){//if point only in one limit,
 }
 bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
   //printBoard("updateLimitByGrid_row");
-  //if(lim_row[linei][limiti].isSolved())
-  //    return true;
   int fs = lim_row[linei][limiti].fs;
   int ls = lim_row[linei][limiti].ls;
-  int fe = lim_row[linei][limiti].fe;
-  int le = lim_row[linei][limiti].le;
   int l = lim_row[linei][limiti].l;
-  int v = b[linei][i];
-  if(v == BLACK){//find sequences
+  if(b[linei][i] == BLACK){//find sequences
     if(only_in_one_limit_row(linei, i, limiti)){
       int seqs = i, seqe = i;
-      while(seqs-1 >= 0 && b[linei][seqs-1] == BLACK){
+      while(seqs-1 >= 0 && b[linei][seqs-1] == BLACK)
 	seqs--;
-      }
-      while(seqe+1 < c && b[linei][seqe+1] == BLACK){
+      while(seqe+1 < c && b[linei][seqe+1] == BLACK)
 	seqe++;
-      }
       fs = max(fs, seqe-l+1);//最左解右移
       ls = min(ls, seqs);//最右解左移
-      if(fs > ls){
-	sprintf(tryFailedReason, "fs > ls at row %d limit %d fs %d ls %d, update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, limiti, fs, ls, linei, seqs, seqe, fs, ls);
-	printBoard("fs >ls");
-	tryFailed = true;
-	return false;
-      }
       DEBUG_PRINT("update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, seqs, seqe, fs, ls);
     }
-  } else if(v == WHITE){//white
-    while(fs <= i && fs + l > i){
+  } else {
+    while(fs <= i && fs + l > i)
       fs++;
-    }
-    while(ls <= i && ls + l > i){
+    while(ls <= i && ls + l > i)
       ls--;
-    }
-    if(fs > ls){//no answer
-      char s[100];
-      sprintf(s, "%d row %dth limit (%d %d) -> fs %d > ls %d\n", linei+1, limiti+1, lim_row[linei][limiti].fs, lim_row[linei][limiti].ls, fs, ls);
-      no_solution(s);
-      return false;
-    }
+  }
+  if(fs > ls){
+    //sprintf(tryFailedReason, "fs > ls at row %d limit %d fs %d ls %d, update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, limiti, fs, ls, linei, seqs, seqe, fs, ls);
+    sprintf(tryFailedReason, "fs > ls at row %d\n", linei);
+    no_solution(tryFailedReason);
+    return false;
   }
   //complete, fill the information back
-  if(lim_row[linei][limiti].fs != fs || lim_row[linei][limiti].ls != ls){
+  /*if(lim_row[linei][limiti].fs != fs || lim_row[linei][limiti].ls != ls){
     DEBUG_PRINT("(%d, %d) = %d lim_row[%d][%d]: (%d, %d) -> (%d, %d)", linei, i, b[linei][i], linei, limiti,   lim_row[linei][limiti].fs,   lim_row[linei][limiti].ls, fs, ls);
-  }
-  setLimit(ROW, linei, lim_row[linei][limiti], fs, ls);
+    }*/
+  if(lim_row[linei][limiti].fs != fs || lim_row[linei][limiti].ls != ls)
+    setLimit(ROW, linei, lim_row[linei][limiti], fs, ls);
   if(fs == ls){
     setRowLimitSolved(linei, limiti);
   } 
@@ -479,11 +458,8 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
   //printBoard("updateLimitByGrid_col");
   int fs = lim_col[linei][limiti].fs;
   int ls = lim_col[linei][limiti].ls;
-  int fe = lim_col[linei][limiti].fe;
-  int le = lim_col[linei][limiti].le;
   int l = lim_col[linei][limiti].l;
-  int v = b[nowr][linei];
-  if(v == BLACK){
+  if(b[nowr][linei] == BLACK){
     DEBUG_PRINT("updatelimitbygrid_col (%d, %d), limit%d, black\n", nowr, linei, limiti);
     if(only_in_one_limit_col(nowr, linei, limiti)){    //find sequences
       int seqs = nowr, seqe = nowr;
