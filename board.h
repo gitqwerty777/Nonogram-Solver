@@ -111,8 +111,10 @@ struct Board{
     }
 
     if(name == NULL){
-      if(asprintf(&name, "nonogram") != 1)
-	exit(1);
+      //name = new char(15);
+      //memcpy(name, "nonogram");
+      //if(asprintf(&name, "nonogram") != 1)
+      //exit(1);
     }
     else
       name = n;

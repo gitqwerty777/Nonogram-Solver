@@ -67,6 +67,7 @@ void Board::doHeuristic(){
     printBoard("afterheu");
     }*/
 }
+
 void Board::initialFillRow(int ri){//TODO: consider no limit in row and col
   int remain = c;
   for(int i = 0; i < lim_row[ri].size(); i++)
@@ -135,6 +136,7 @@ void Board::initialFillCol(int ci){
   }
   //changeNumQueue.push(change(COL, ci));
 }
+
 bool Board::doHeuristicByLine(){//TODO:Optimize, merge queue into class member
   tryFailed = false; // TODO: why this is needed...
   priority_queue<change, vector<change>, change> changeQueue;
@@ -180,6 +182,7 @@ bool Board::doHeuristicByLine(){//TODO:Optimize, merge queue into class member
   }
   return true;
 }
+
 bool Board::updateByHeuristic(line_type type, int line){//TODO: improve process
   int originalSetnum = alreadySetGridNumber;
   if(type == ROW){
@@ -194,8 +197,8 @@ bool Board::updateByHeuristic(line_type type, int line){//TODO: improve process
     fill_blank_row(line);
 
     //if(changed_row[line]){
-      updateLimitByLimit_row(line);
-      fillRowByLimit(line);
+    //updateLimitByLimit_row(line);
+    //      fillRowByLimit(line);
       //changed_row[line] = false;
       //}
   } else {
@@ -209,8 +212,8 @@ bool Board::updateByHeuristic(line_type type, int line){//TODO: improve process
     }
     fill_blank_col(line);
     //if(changed_col[line]){
-      updateLimitByLimit_col(line);
-      fillColByLimit(line);
+    //updateLimitByLimit_col(line);
+    //      fillColByLimit(line);
       //changed_col[line] = false;
       //}
   }
@@ -446,6 +449,7 @@ inline bool Board::only_in_one_limit_row(int nowr, int nowc, int limiti){
   return inLimiti;
   //return ((limiti == 0) || !in_limit_row(nowr, limiti-1, nowc)) && (in_limit_row(nowr, limiti, nowc)) && ((limiti == lim_row[nowr].size()-1) || !in_limit_row(nowr, limiti+1, nowc));
 }
+
 void Board::updateColLimits(struct Point p, int v){
   //if(isUpdate(p.r, p.c))
   //return;
@@ -529,7 +533,6 @@ void Board::setRowLimitSolved(int linei, int limiti){
   fill_blank_row(linei);
   isLineSolved(ROW, linei);
 }
-
 void Board::setLimit(line_type t, int linei, Limit &l, int fs, int ls){
   if(l.set_pos(fs, ls)){
     DEBUG_PRINT("setlimit %s %d = (%d, %d)\n", (t==ROW)?"row":"col", linei, fs, ls);
@@ -542,6 +545,7 @@ void Board::setLimit(line_type t, int linei, Limit &l, int fs, int ls){
     }
   }
 }
+
 void Board::fillGrid(int r, int c, int v){
   //commented because it cannot happen
   /*if(r < 0 || c < 0 || r >= this->r || c >= this->c){
@@ -571,7 +575,6 @@ void Board::fillGrid(int r, int c, int v){
     no_solution(tryFailedReason);
   }
 }
-
 void Board::fillGrid_Solved(int r, int c, int v){
   DEBUG_PRINT("fillGrid (%d, %d) = %s\n", r, c, (v==1)?"BLACK":"WHITE");
   b[r][c] = v;
@@ -731,7 +734,7 @@ void Board::saveFullResult(){
   FILE* f = fopen(outputName, "w");
   if(f == NULL){
     fprintf(stderr, "cannot open file %s\n", outputName);
-    sleep(10);
+    //sleep(10);
     saveAndExit(10);
     return;
   }
