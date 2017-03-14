@@ -1,5 +1,13 @@
 schedule 10/15~11/21
 
+
+
+* 6. After TAAI
+** 交大論文1: An efficient algorithm for solving nonograms
+** 交大論文2: An Efficient Approach to Solving Nonograms
+** use bitset instead int...
+** use better procedure
+
 * DONE 1. implementation
 ** DONE make independent scanner
 *** DONE make scanner interface 10/21
