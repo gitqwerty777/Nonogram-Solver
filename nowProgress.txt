@@ -1,0 +1,5 @@
+- debug: dfs question
+  - even 15 make mistake, first try 15
+  - still have bug after fix limitbylimit index 0 bug
+  - write multiinput
+
