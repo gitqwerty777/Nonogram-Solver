@@ -17,35 +17,36 @@ int problemNum = 1;
 int boardSize = 25;
 bool isTourament = false;
 
+/// @brief use getopt to get arg
+///
+/// reference: http://wen00072-blog.logdown.com/posts/171197-using-getopt-parse-command-line-parameter
 void parseArgument(int argc, char** argv){
-  // use getopt to get arg: http://wen00072-blog.logdown.com/posts/171197-using-getopt-parse-command-line-parameter
-  while(1){
+  while(true){
     int cmd_opt = getopt(argc, argv, "tn:f:s:");
-    if (cmd_opt == -1) {    /* End condition always first */
+    if (cmd_opt == -1) {//End condition
       break;
-    }
-    if (cmd_opt != '?') {    /* Print option when it is valid */
+    } else if (cmd_opt != '?') {//Print option when it is valid
       fprintf(stderr, "option:-%c\n", cmd_opt);
     }
-
-    switch (cmd_opt) {    /* Lets parse */      /* Error handle: Mainly missing arg or illegal option */
+    switch (cmd_opt) { /// Error handle: Mainly missing arg or illegal option
     case 't':
       fprintf(stderr, "enable tourament mode\n");
       isTourament = true;
       break;
     case 'n':
       if(optarg){
-	sscanf(optarg, "%d", &problemNum);
+        sscanf(optarg, "%d", &problemNum);
+        fprintf(stderr, "-n with value %d\n", problemNum);
       } else {
-	fprintf(stderr, "-n no argument\n");
+	fprintf(stderr, "-n without argument\n");
       }
       break;
     case 's':
       if(optarg){
 	sscanf(optarg, "%d", &boardSize);
-        fprintf(stderr, "s option %d\n", boardSize);
+        fprintf(stderr, "-s with value %d\n", boardSize);
       } else {
-	fprintf(stderr, "-s no argument\n");
+	fprintf(stderr, "-s without argument\n");
       }
       break;
     case 'f':
@@ -53,7 +54,7 @@ void parseArgument(int argc, char** argv){
         problemName = new char(100);
         fprintf(stderr, "f option %s\n", optarg);
 	int i = sprintf(problemName, "%s", optarg);
-	fprintf(stderr, "use %s as saved file\n", problemName);
+	fprintf(stderr, "save output in path %s \n", problemName);
       } else {
 	fprintf(stderr, "-f no argument\n");
       }
@@ -78,12 +79,11 @@ void parseArgument(int argc, char** argv){
 }
 
 int main(int argc, char** argv){
-  setlocale(LC_ALL, "");
+  setlocale(LC_ALL, "");//for wchar
   parseArgument(argc, argv);
 
-  struct Board board;
-
-  NonogramInputReader ir(stdin, boardSize);  //new reader
+  Board board;
+  NonogramInputReader ir(stdin, boardSize);//read question from stdin
   NonogramWriterInterface* writer;
   if(isTourament){
     writer = new NonogramWriter_Tourament;
@@ -91,7 +91,7 @@ int main(int argc, char** argv){
     writer = new NonogramWriter;
   }
   board.setWriter(writer);
-  
+
   clock_t beginTime = clock();
   for(int i = 0; i < problemNum; i++){
     clock_t start_t = clock();
