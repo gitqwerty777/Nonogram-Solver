@@ -171,7 +171,7 @@ bool DFSBoard::tryFillRowbyFillStartHeuristic(const Line& nowLine, const vector<
     for(int i = 0; i < limitNum; i++)
       for(int j = fillStart[i]; j < fillStart[i]+lim_col[nowc][i].l; j++)
 	fillGrid(j,nowc, BLACK);
-    for(int i = 0; i < c; i++)
+    for(int i = 0; i < r; i++)
       if(b[i][nowc] == SPACE)
 	fillGrid(i, nowc, WHITE);
   }
