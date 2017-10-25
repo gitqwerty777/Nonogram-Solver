@@ -1,11 +1,12 @@
 CXX=g++
-CXXFLAGS=-g -pg -fno-omit-frame-pointer -O3
 
 ifeq ($(mode),debug) #if mode variable is empty, setting debug build mode
 	mode=debug
+	CXXFLAGS=-g -pg -fno-omit-frame-pointer -O3
 	CXXFLAGS+=-D__DEBUG__ # define __DEBUG__
 else
 	mode=release
+	CXXFLAGS=-O3 -march=native
 endif
 
 all: information main
@@ -26,6 +27,7 @@ test100: heu
 test200: heu
 	./heu -t -n 200 -s 15 < 15question.txt > trash15mul200
 
+# 18.86 seconds in 2017/10/25
 test290: heu
 	./heu -t -n 290 -s 15 < 15question.txt > trash15mul200
 
