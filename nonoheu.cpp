@@ -43,13 +43,15 @@ void parseArgument(int argc, char** argv){
     case 's':
       if(optarg){
 	sscanf(optarg, "%d", &boardSize);
+        fprintf(stderr, "s option %d\n", boardSize);
       } else {
 	fprintf(stderr, "-s no argument\n");
       }
       break;
     case 'f':
       if (optarg){
-	problemName = new char(20);
+        problemName = new char(100);
+        fprintf(stderr, "f option %s\n", optarg);
 	int i = sprintf(problemName, "%s", optarg);
 	fprintf(stderr, "use %s as saved file\n", problemName);
       } else {
