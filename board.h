@@ -155,11 +155,14 @@ struct Board{
   //fill grids based on limit
   void initialFillRow(int i);
   void initialFillCol(int i);
+    void initialFill(line_type lt, std::vector<Limit>& l, int lineIndex);
   void fillRowByLimit(int);
   void fillColByLimit(int);
   void fill_blank_row(int);
   void fill_blank_col(int);
+    void fill_blank(line_type lt, std::vector<Limit>& lim, int nowi);
   void fillGrid(int r, int c, int v);//fill single grid
+  void fillGrid(line_type lt, int first, int second, int v);
   void fillGrid_Solved(int r, int c, int v);//fill single grid
   //check the relationship between grid and limit
   bool in_limit_col(int linei, int limiti, int i);//whether the block would only be in specified limit
@@ -170,6 +173,7 @@ struct Board{
   //high-level functions related to limits
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
+    void setLimitSolved(line_type lt, std::vector<Limit>& lim, int linei, int limiti);
   void isLineSolved(line_type type, int line);
   bool isAllSolved(){//TODO: ??? use another way to store information
     return (solvedLineNum == r + c);
@@ -189,6 +193,7 @@ struct Board{
   void doDFS();
 
   void setLimit(line_type t, int linei, Limit &l, int fs, int ls);
+    bool checkColor(line_type lt, int nowi, int i, int color);
 };
 
 
