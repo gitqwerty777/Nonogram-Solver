@@ -12,51 +12,22 @@
 
 using namespace std;
 
-#define saveAndExit(errorcode) {\
-  saveResult();\
-  exit(errorcode);\
-}
-
-inline void Board::no_solution(const char in[]){
-  if(solveMode == HEURISTIC){
-    printf("no solution: %s\n", in);
-    printBoard("no solution");
-    saveAndExit(1);
-  } else if(solveMode == DFS) {
-    DEBUG_PRINT("no solution: %s\n", in);
-    sprintf(tryFailedReason, "%s\n", in);
-    tryFailed = true;
-  }
-}
-inline void Board::no_solution(const char in[], line_type t, int i){//check answer failed
-  if(solveMode == HEURISTIC){
-    printf("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
-    saveAndExit(5);
-  } else if (solveMode == DFS) {
-    DEBUG_PRINT("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
-    sprintf(tryFailedReason, "%s", in);
-    tryFailed = true;
-  }
-}
-
-/// @brief use heuristic to solve at first
+/// @brief use heuristic to solve in the beginning
 void Board::doHeuristic(){
   solveMode = HEURISTIC;
   printBoard("init fill row");
   for(int i = 0 ; i < r; i++)
-      initialFillRow(i);
+    initialFill(ROW, lim_row[i] ,i);
   printBoard("init fill col");
   for(int i = 0; i < c; i++)
-    initialFillCol(i);
+    initialFill(COL, lim_col[i], i);
   printBoard("after fill col and row");
-
   isLimitInit = true;
 
   while(!isAllSolved()){//do heuristic after no limit and grid to update
     if(!doHeuristicByLine())
-        break;
+      break;
   }
-
 }
 
 void Board::initialFillRow(int ri){//TODO: consider no limit in row and col
@@ -68,10 +39,10 @@ void Board::initialFillRow(int ri){//TODO: consider no limit in row and col
     int nowi = 0;
     for(int i = 0; i < lim_row[ri].size(); i++){
       if(i != 0)
-	fillGrid(ri, nowi++, WHITE);
+        fillGrid(ri, nowi++, WHITE);
       lim_row[ri][i].set_pos(nowi, nowi);
       for(int j = 0; j < lim_row[ri][i].l; j++)
-	fillGrid(ri, nowi++, BLACK);
+        fillGrid(ri, nowi++, BLACK);
     }
     for(int i = 0; i < lim_row[ri].size(); i++)//set all limit in row "solved"
       setRowLimitSolved(ri, i);
@@ -83,65 +54,79 @@ void Board::initialFillRow(int ri){//TODO: consider no limit in row and col
       fe = fs + lim_row[ri][i].l - 1;
       le = ls + lim_row[ri][i].l - 1;
       for(int j = ls; j <= fe; j++)
-	fillGrid(ri, j, BLACK);
+        fillGrid(ri, j, BLACK);
       lim_row[ri][i].set_pos(fs, ls);
       fs = fe + 2;//next limit
       for(int j = le+1; j < fs; j++)
-	fillGrid(ri, j, WHITE);
+        fillGrid(ri, j, WHITE);
     }
   }
   //changeNumQueue.push(change(ROW, ri));
 }
 
-/*void Board::initialFill(line_type lt, std::vector<Limit>& l, int lineIndex){
-
-    int remain = (lt == ROW)?c:r;
-    for(int i = 0; i < l.size(); i++)
-        remain -= l[i].l;//blacks
-    remain -= l.size() - 1;//whites
-    if(remain == 0){//can fill all
-        int nowi = 0;
-        for(int i = 0; i < l.size(); i++){
-            l[i].set_pos(nowi, nowi);
-            for(int j = 0; j < l[i].l; j++)
-                fillGrid(nowi++, lineIndex, BLACK);
-            if(i != l.size()-1)
-                fillGrid(nowi++, lineIndex, WHITE);
-        }
-        for(int i = 0; i < l.size(); i++){
-            setColLimitSolved(ci, i);
-        }
-    } else { // fill partial
-        int fs = 0, ls;
-        int fe, le;
-        for(int i = 0; i < l.size(); i++){
-            ls = fs + remain;
-            fe = fs + l[i].l - 1;
-            le = ls + l[i].l - 1;
-            for(int j = ls; j <= fe; j++){
-                fillGrid(j, ci, BLACK);
-            }
-            l[i].set_pos(fs, ls);
-            fs = fe + 2;//next limit
-            for(int j = le+1; j < fs; j++)
-                fillGrid(j, ci, WHITE);
-        }
+void Board::initialFill(line_type lt, std::vector<Limit>& l, int lineIndex){
+  int remain = (lt==ROW)?c:r;
+  for(int i = 0; i < l.size(); i++)
+    remain -= l[i].l;//blacks
+  remain -= l.size() - 1;//whites
+  if(remain == 0){//can fill all
+    int nowi = 0;
+    for(size_t i = 0; i < l.size(); i++){
+      l[i].set_pos(nowi, nowi);
+      for(int j = 0; j < l[i].l; j++)
+        fillGrid(lt, nowi++, lineIndex, BLACK);
+      if(i != l.size()-1)
+        fillGrid(lt, nowi++, lineIndex, WHITE);
     }
-    }*/
+    for(size_t i = 0; i < l.size(); i++){
+      setLimitSolved(lt, l, lineIndex, i);
+    }
+  } else { // fill partial
+    int fs = 0, ls;
+    int fe, le;
+    for(size_t i = 0; i < l.size(); i++){
+      ls = fs + remain;
+      fe = fs + l[i].l - 1;
+      le = ls + l[i].l - 1;
+      for(int j = ls; j <= fe; j++){
+        fillGrid(lt, j, lineIndex, BLACK);
+      }
+      l[i].set_pos(fs, ls);
+      fs = fe + 2;//next limit
+      for(int j = le+1; j < fs; j++)
+        fillGrid(lt, j, lineIndex, WHITE);
+    }
+  }
+}
+
+void Board::setRowLimitSolved(int linei, int limiti){
+  int fs = lim_row[linei][limiti].fs;
+  int fe = lim_row[linei][limiti].fe;
+  int ls = lim_row[linei][limiti].ls;
+  int l = lim_row[linei][limiti].l;
+  for(int i = 0; i < l; i++)
+    fillGrid(linei,fs+i,BLACK);
+  if(fs - 1 >= 0)
+    fillGrid(linei,fs-1,WHITE);
+  if(fe + 1 < c)
+    fillGrid(linei,fe+1,WHITE);
+  fill_blank_row(linei);
+  isLineSolved(ROW, linei);
+}
 
 void Board::initialFillCol(int ci){
   int remain = r;
   for(int i = 0; i < lim_col[ci].size(); i++)
-      remain -= lim_col[ci][i].l;//blacks
+    remain -= lim_col[ci][i].l;//blacks
   remain -= lim_col[ci].size() - 1;//whites
   if(remain == 0){//can fill all
     int nowi = 0;
     for(int i = 0; i < lim_col[ci].size(); i++){
       lim_col[ci][i].set_pos(nowi, nowi);
       for(int j = 0; j < lim_col[ci][i].l; j++)
-	fillGrid(nowi++, ci, BLACK);
+        fillGrid(nowi++, ci, BLACK);
       if(i != lim_col[ci].size()-1)
-	fillGrid(nowi++, ci, WHITE);
+        fillGrid(nowi++, ci, WHITE);
     }
     for(int i = 0; i < lim_col[ci].size(); i++){
       setColLimitSolved(ci, i);
@@ -154,18 +139,18 @@ void Board::initialFillCol(int ci){
       fe = fs + lim_col[ci][i].l - 1;
       le = ls + lim_col[ci][i].l - 1;
       for(int j = ls; j <= fe; j++){
-	fillGrid(j, ci, BLACK);
+        fillGrid(j, ci, BLACK);
       }
       lim_col[ci][i].set_pos(fs, ls);
       fs = fe + 2;//next limit
       for(int j = le+1; j < fs; j++)
-	fillGrid(j, ci, WHITE);
+        fillGrid(j, ci, WHITE);
     }
   }
   //changeNumQueue.push(change(COL, ci));
 }
 
-bool Board::doHeuristicByLine(){//TODO:Optimize, merge queue into class member
+bool Board::doHeuristicByLine(){//TODO:Optimize
   tryFailed = false; // TODO: why this is needed...
   priority_queue<change, vector<change>, change> changeQueue;
   for(int i = 0;i < r; i++)
@@ -211,6 +196,28 @@ bool Board::doHeuristicByLine(){//TODO:Optimize, merge queue into class member
   return true;
 }
 
+inline void Board::no_solution(const char in[]){
+  if(solveMode == HEURISTIC){
+    printf("no solution: %s\n", in);
+    printBoard("no solution");
+    saveAndExit(1);
+  } else if(solveMode == DFS) {
+    DEBUG_PRINT("no solution: %s\n", in);
+    sprintf(tryFailedReason, "%s\n", in);
+    tryFailed = true;
+  }
+}
+inline void Board::no_solution(const char in[], line_type t, int i){//check answer failed
+  if(solveMode == HEURISTIC){
+    printf("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
+    saveAndExit(5);
+  } else if (solveMode == DFS) {
+    DEBUG_PRINT("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
+    sprintf(tryFailedReason, "%s", in);
+    tryFailed = true;
+  }
+}
+
 bool Board::updateByHeuristic(line_type type, int line){//TODO: improve process
   int originalSetnum = alreadySetGridNumber;
   if(type == ROW){
@@ -220,15 +227,15 @@ bool Board::updateByHeuristic(line_type type, int line){//TODO: improve process
     //changed_row[line] = false;
     for(int j = 0; j < c; j++){//TODO: optimize
       if(b[line][j] != SPACE)
-	updateRowLimits(Point(line,j), b[line][j]);//grid, limit
+        updateRowLimits(Point(line,j), b[line][j]);//grid, limit
     }
     fill_blank_row(line);
 
     //if(changed_row[line]){
     //updateLimitByLimit_row(line);
     //      fillRowByLimit(line);
-      //changed_row[line] = false;
-      //}
+    //changed_row[line] = false;
+    //}
   } else {
     DEBUG_PRINT("updateHeuristic: col%d\n", line);
     updateLimitByLimit_col(line);
@@ -236,14 +243,14 @@ bool Board::updateByHeuristic(line_type type, int line){//TODO: improve process
     //changed_col[line] = false;
     for(int j = 0; j < r; j++){
       if(b[j][line] != SPACE)
-	updateColLimits(Point(j, line), b[j][line]);
+        updateColLimits(Point(j, line), b[j][line]);
     }
     fill_blank_col(line);
     //if(changed_col[line]){
     //updateLimitByLimit_col(line);
     //      fillColByLimit(line);
-      //changed_col[line] = false;
-      //}
+    //changed_col[line] = false;
+    //}
   }
   return originalSetnum != alreadySetGridNumber;//is really updated grid or not
 }
@@ -339,6 +346,54 @@ bool Board::updateLimitByLimit_col(int nowc){
   }
 }
 
+inline bool Board::checkColor(line_type lt, int nowi, int i, int color){
+  if(lt == ROW){
+    return b[nowi][i] == color;
+  } else {
+    return b[i][nowi] == color;
+  }
+}
+void Board::fill_blank(line_type lt, std::vector<Limit>& lim, int nowi){//fill white to the space sequence that is impossible for any limit to fill in
+  DEBUG_PRINT("fill_blank %d\n", nowi);
+  fillRowByLimit(nowi);
+  int minl = INF;
+  for(int i = 0; i < lim.size(); i++){
+    if(!lim[i].isSolved() && minl > lim[i].l){
+      minl = lim[i].l;
+    }
+  }
+  if(minl == INF){
+    return;
+  }
+
+  int nowb = 0;
+  bool allblack = true;
+  int linelength = (lt==ROW)?c:r;
+  for(int i = 0;i < linelength; i++){
+    if(checkColor(lt, nowi, i, WHITE)){
+      if(nowb < minl && !allblack){
+        DEBUG_PRINT("fillblank: nowb = %d, minl = %d, (%d, %d~%d), white\n", nowb, minl, nowi, i, i-nowb+1);
+        for(int j = 0; j < nowb; j++){
+          fillGrid(lt, i-j, nowi, WHITE);
+        }
+      }
+      nowb = 0;
+      allblack = true;
+    } else {//black or space
+      if(checkColor(lt, nowi, i, SPACE)){
+        allblack = false;
+      }
+      nowb++;//find maximum non-white sequence
+    }
+  }
+  if(nowb < minl && !allblack){//the last non-white sequence
+    DEBUG_PRINT("fillblank: nowb = %d, minl = %d, (%d, %d~%d), white\n", nowb, minl, nowi, c-1, c-nowb);
+    for(int j = 0; j < nowb; j++){
+      fillGrid(lt, c-1-j, nowi, WHITE);
+    }
+  }
+}
+
 void Board::fill_blank_row(int nowr){//fill white to the space sequence that is impossible for any limit to fill in
   DEBUG_PRINT("fill_blank_row %d\n", nowr);
   fillRowByLimit(nowr);
@@ -357,16 +412,16 @@ void Board::fill_blank_row(int nowr){//fill white to the space sequence that is 
   for(int i = 0;i < c; i++){
     if(b[nowr][i] == WHITE){
       if(nowb < minl && !allblack){
-	DEBUG_PRINT("fillblank: nowb = %d, minl = %d, (%d, %d~%d), white\n", nowb, minl, nowr, i, i-nowb+1);
-	for(int j = 0; j < nowb; j++){
-	  fillGrid(nowr, i-j, WHITE);
-	}
+        DEBUG_PRINT("fillblank: nowb = %d, minl = %d, (%d, %d~%d), white\n", nowb, minl, nowr, i, i-nowb+1);
+        for(int j = 0; j < nowb; j++){
+          fillGrid(nowr, i-j, WHITE);
+        }
       }
       nowb = 0;
       allblack = true;
     } else {//black or space
       if(b[nowr][i] == SPACE){
-	allblack = false;
+        allblack = false;
       }
       nowb++;//find maximum non-white sequence
     }
@@ -395,13 +450,13 @@ void Board::fill_blank_col(int nowc){
   for(int i = 0;i < r; i++){//if possible empty grid sequence less than min limit, fill all to white
     if(b[i][nowc] != WHITE){
       if(b[i][nowc] == SPACE){
-	allblack = false;
+        allblack = false;
       }
       nowb++;
     } else{
       if(nowb < minl && !allblack){
-	for(int j = 0; j < nowb; j++)
-	  fillGrid(i-j, nowc, WHITE);
+        for(int j = 0; j < nowb; j++)
+          fillGrid(i-j, nowc, WHITE);
       }
       nowb = 0;
       allblack = true;
@@ -431,9 +486,9 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
     if(only_in_one_limit_row(linei, i, limiti)){
       int seqs = i, seqe = i;
       while(seqs-1 >= 0 && b[linei][seqs-1] == BLACK)
-	seqs--;
+        seqs--;
       while(seqe+1 < c && b[linei][seqe+1] == BLACK)
-	seqe++;
+        seqe++;
       fs = max(fs, seqe-l+1);//最左解右移
       ls = min(ls, seqs);//最右解左移
       DEBUG_PRINT("update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, seqs, seqe, fs, ls);
@@ -469,9 +524,9 @@ inline bool Board::only_in_one_limit_row(int nowr, int nowc, int limiti){
   for(int i = 0; i < lim_row[nowr].size(); i++){
     if(in_limit_row(nowr, i, nowc)){
       if(i != limiti)
-	return false;
+        return false;
       else
-	inLimiti = true;
+        inLimiti = true;
     }
   }
   return inLimiti;
@@ -496,9 +551,9 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
     if(only_in_one_limit_col(nowr, linei, limiti)){    //find sequences
       int seqs = nowr, seqe = nowr;
       while(seqs-1 >= 0 && b[seqs-1][linei] == BLACK)
-	seqs--;
+        seqs--;
       while(seqe+1 < r && b[seqe+1][linei] == BLACK)
-	seqe++;
+        seqe++;
       fs = max(fs, seqe-l+1);//最左解右移
       ls = min(ls, seqs);//最右解左移
     }
@@ -547,19 +602,19 @@ void Board::setColLimitSolved(int linei, int limiti){
   fill_blank_col(linei);
   isLineSolved(COL, linei);
 }
-void Board::setRowLimitSolved(int linei, int limiti){
-  int fs = lim_row[linei][limiti].fs;
-  int fe = lim_row[linei][limiti].fe;
-  int ls = lim_row[linei][limiti].ls;
-  int l = lim_row[linei][limiti].l;
+void Board::setLimitSolved(line_type lt, std::vector<Limit>& lim, int linei, int limiti){
+  int fs = lim[limiti].fs;
+  int fe = lim[limiti].fe;
+  int ls = lim[limiti].ls;
+  int l = lim[limiti].l;
   for(int i = 0; i < l; i++)
-    fillGrid(linei,fs+i,BLACK);
+    fillGrid(lt, fs+i, linei, BLACK);
   if(fs - 1 >= 0)
-    fillGrid(linei,fs-1,WHITE);
+    fillGrid(lt, fs-1, linei, WHITE);
   if(fe + 1 < c)
-    fillGrid(linei,fe+1,WHITE);
-  fill_blank_row(linei);
-  isLineSolved(ROW, linei);
+    fillGrid(lt, fe+1, linei, WHITE);
+  fill_blank(lt, lim, linei);
+  isLineSolved(lt, linei);
 }
 void Board::setLimit(line_type t, int linei, Limit &l, int fs, int ls){
   if(l.set_pos(fs, ls)){
@@ -603,6 +658,44 @@ void Board::fillGrid(int r, int c, int v){
     no_solution(tryFailedReason);
   }
 }
+void Board::fillGrid(line_type lt, int second, int first, int v){
+  int r, c;
+  if(lt == ROW){
+    r = first;
+    c = second;
+  } else {
+    r = second;
+    c = first;
+  }
+  //commented because it cannot happen
+  /*if(r < 0 || c < 0 || r >= this->r || c >= this->c){
+    sprintf(tryFailedReason, "fillgrid out of range");
+    no_solution(tryFailedReason);
+    return;
+    }*/
+  if(b[r][c] == SPACE){
+    DEBUG_PRINT("fillGrid (%d, %d) = %s\n", r, c, (v==1)?"BLACK":"WHITE");
+    b[r][c] = v;
+    change_row[r]++;
+    change_col[c]++;
+    alreadySetGridNumber++;
+    if(isLimitInit){//TODO: optimize
+      DEBUG_PRINT("update limits(%d, %d)\n", r, c);
+      updateRowLimits(Point(r, c), v);
+      updateColLimits(Point(r, c), v);
+      updateLimitByLimit_row(r);//
+      updateLimitByLimit_col(c);//
+      fillRowByLimit(r);//limits are updated by others, need to fillgrid
+      fillColByLimit(c);//limits are updated by others, need to fillgrid
+      DEBUG_PRINT("update limits complete(%d, %d)\n", r, c);
+      isupdate[r][c] = true;
+    }
+  } else if(b[r][c] != v){
+    sprintf(tryFailedReason, "illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
+    no_solution(tryFailedReason);
+  }
+}
+
 void Board::fillGrid_Solved(int r, int c, int v){
   DEBUG_PRINT("fillGrid (%d, %d) = %s\n", r, c, (v==1)?"BLACK":"WHITE");
   b[r][c] = v;
@@ -619,7 +712,7 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
       return;
     for(int i = 0; i < lim_row[line].size(); i++)
       if(!lim_row[line][i].isSolved())//not solved yet, return
-	return;
+        return;
 
     DEBUG_PRINT("%d row all solve\n", line);
     solved_row[line] = true;
@@ -627,14 +720,14 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
     int nowi = 0; int nowc = 0;
     for(int i = 0; i < c; i++)//TODO: fillgrid_solved do not update col limit
       if(b[line][i] == SPACE)
-	fillGrid_Solved(line, i, WHITE);
+        fillGrid_Solved(line, i, WHITE);
     printBoard("solve row ");
   } else if (type == COL) {//col
     if(solved_col[line])
       return;
     for(int i = 0; i < lim_col[line].size(); i++)
       if(!lim_col[line][i].isSolved())
-	return;
+        return;
 
     DEBUG_PRINT("%d col all solve\n", line);
     solved_col[line] = true;
@@ -642,7 +735,7 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
     int nowi = 0; int nowr = 0;
     for(int i = 0; i < r; i++)
       if(b[i][line] == SPACE)
-	fillGrid_Solved(i, line, WHITE);
+        fillGrid_Solved(i, line, WHITE);
     printBoard("solve col");
   }
 }
@@ -653,7 +746,7 @@ vector<int> Board::getLimitFromBoard_row(int nowr){
     if(b[nowr][i] == BLACK){
       int count = 0;
       while(i < c && b[nowr][i] == BLACK){
-	count++; i++;
+        count++; i++;
       }
       limit.push_back(count);
     }
@@ -666,7 +759,7 @@ vector<int> Board::getLimitFromBoard_col(int nowc){
     if(b[i][nowc] == BLACK){
       int count = 0;
       while(i < r && b[i][nowc] == BLACK){
-	count++; i++;
+        count++; i++;
       }
       limit.push_back(count);
     }
@@ -693,9 +786,9 @@ void Board::printBoard(const char in[]){
     printf("%*s ", maxl, "");
     for(int j = 0; j < c; j++)
       if(lim_col[j].size() > maxlc-1-i)
-	printf("%2d ", lim_col[j][maxlc-1-i].l);
+        printf("%2d ", lim_col[j][maxlc-1-i].l);
       else
-	printf("   ");
+        printf("   ");
     puts("");
   }
   printf("%*s ", maxl, "");
@@ -706,22 +799,22 @@ void Board::printBoard(const char in[]){
   for(int i = 0; i < r; i++){
     for(int j = 0; j < maxlr; j++){
       if(j < lim_row[i].size())
-	printf("%2d ", lim_row[i][j].l);
+        printf("%2d ", lim_row[i][j].l);
       else
-	printf("   ");
+        printf("   ");
     }
     printf("|");
     for(int j = 0; j < c; j++){
       if(b[i][j] != SPACE)
-	printf("%2d ", (b[i][j] == 1)?1:0);
+        printf("%2d ", (b[i][j] == 1)?1:0);
       else
-	printf("   ");
+        printf("   ");
     }
     puts("");
   }
   /*for(int i = 0; i < r; i++){
     for(int j = 0; j < c; j++){
-      printf("%ls", boardchar[b[i][j]]);
+    printf("%ls", boardchar[b[i][j]]);
     }
     printf("%ls", cl);
     }*/
@@ -749,7 +842,7 @@ void Board::saveSimpleResult(FILE* f){//TODO: abstract
     for(int j = 0; j < c; j++){
       fprintf(f, "%d", (b[i][j] == 1)?1:0);
       if(j != c-1)
-	fputs("\t", f);
+        fputs("\t", f);
     }
     fputs("\n", f);
   }
@@ -780,9 +873,9 @@ void Board::saveFullResult(){
     fprintf(f, "%*s ", maxl, "");
     for(int j = 0; j < c; j++)
       if(lim_col[j].size() > maxlc-1-i)
-	fprintf(f, "%2d ", lim_col[j][maxlc-1-i].l);
+        fprintf(f, "%2d ", lim_col[j][maxlc-1-i].l);
       else
-	fprintf(f, "   ");
+        fprintf(f, "   ");
     fputs("\n", f);
   }
   fprintf(f, "%*s ", maxl, "");
@@ -793,16 +886,16 @@ void Board::saveFullResult(){
   for(int i = 0; i < r; i++){
     for(int j = 0; j < maxlr; j++){
       if(j < lim_row[i].size())
-	fprintf(f, "%2d ", lim_row[i][j].l);
+        fprintf(f, "%2d ", lim_row[i][j].l);
       else
-	fprintf(f, "   ");
+        fprintf(f, "   ");
     }
     fprintf(f, "|");
     for(int j = 0; j < c; j++){
       if(b[i][j] != SPACE)
-	fprintf(f, "%2d ", (b[i][j] == 1)?1:0);
+        fprintf(f, "%2d ", (b[i][j] == 1)?1:0);
       else
-	fprintf(f, "   ");
+        fprintf(f, "   ");
     }
     fputs("\n", f);
   }
@@ -820,10 +913,10 @@ bool Board::checkAnswer(){
     seq.clear();
     for(int j = 0; j < c; j++){
       if(b[i][j] == BLACK){
-	int count = 1;
-	while(j+1 < c && b[i][j+1] == BLACK){
-	  count++; j++;}
-	seq.push_back(count);
+        int count = 1;
+        while(j+1 < c && b[i][j+1] == BLACK){
+          count++; j++;}
+        seq.push_back(count);
       }
     }
     if(lim_row[i].size() != seq.size()){
@@ -832,18 +925,18 @@ bool Board::checkAnswer(){
     }
     for(int j = 0; j < lim_row[i].size(); j++)
       if(lim_row[i][j].l != seq[j]){
-	no_solution("checkAnswer: wrong answer in", ROW, i);
-	return false;
+        no_solution("checkAnswer: wrong answer in", ROW, i);
+        return false;
       }
   }
   for(int i = 0; i < c; i++){
     seq.clear();
     for(int j = 0; j < r; j++){
       if(b[j][i] == BLACK){
-	int count = 1;
-	while(j+1 < r && b[j+1][i] == BLACK){
-	  count++; j++;}
-	seq.push_back(count);
+        int count = 1;
+        while(j+1 < r && b[j+1][i] == BLACK){
+          count++; j++;}
+        seq.push_back(count);
       }
     }
     if(lim_col[i].size() != seq.size()){
@@ -852,8 +945,8 @@ bool Board::checkAnswer(){
     }
     for(int j = 0; j < lim_col[i].size(); j++)
       if(lim_col[i][j].l != seq[j]){
-	no_solution("checkAnswer: wrong answer in", COL, i);
-	return false;
+        no_solution("checkAnswer: wrong answer in", COL, i);
+        return false;
       }
   }
   return true;
