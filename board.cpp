@@ -16,7 +16,7 @@ using namespace std;
   saveResult();\
   exit(errorcode);\
 }
- 
+
 inline void Board::no_solution(const char in[]){
   if(solveMode == HEURISTIC){
     printf("no solution: %s\n", in);
@@ -42,25 +42,21 @@ inline void Board::no_solution(const char in[], line_type t, int i){//check answ
 /// @brief use heuristic to solve at first
 void Board::doHeuristic(){
   solveMode = HEURISTIC;
-
+  printBoard("init fill row");
+  for(int i = 0 ; i < r; i++)
+      initialFillRow(i);
+  printBoard("init fill col");
   for(int i = 0; i < c; i++)
     initialFillCol(i);
-  printBoard("after fill col");
-  for(int i = 0 ; i < r; i++)
-    initialFillRow(i);
   printBoard("after fill col and row");
 
   isLimitInit = true;
 
   while(!isAllSolved()){//do heuristic after no limit and grid to update
     if(!doHeuristicByLine())
-      break;
+        break;
   }
-  /*if(!isAllSolved()){
-    printBoard("beforeheu");
-    assert(!doHeuristicByLine());
-    printBoard("afterheu");
-    }*/
+
 }
 
 void Board::initialFillRow(int ri){//TODO: consider no limit in row and col
@@ -186,20 +182,20 @@ bool Board::doHeuristicByLine(){//TODO:Optimize, merge queue into class member
   while(!changeQueue.empty()){
     change ch = changeQueue.top();
     changeQueue.pop();
-    int *mychange;
+    int *changeNum;
     if(ch.type == ROW)
-      mychange = &change_row[ch.lineNum];
+      changeNum = &change_row[ch.lineNum];
     else
-      mychange = &change_col[ch.lineNum];
-    *mychange = 0; // reset changed num
+      changeNum = &change_col[ch.lineNum];
+    *changeNum = 0; // reset changed num
     DEBUG_PRINT("update %s %d\n", (ch.type==ROW)?"ROW":"COL", ch.lineNum);
     if(updateByHeuristic(ch.type, ch.lineNum))
       isChange = true;
     if(tryFailed){
       return false;
     }
-    if(*mychange != 0)
-      changeQueue.push(change(ch.type, ch.lineNum, *mychange));
+    if(*changeNum != 0)
+      changeQueue.push(change(ch.type, ch.lineNum, *changeNum));
   }
   if(!isChange && maxChangeNum == 0){
     if(solveMode == HEURISTIC){

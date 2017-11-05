@@ -1,20 +1,14 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include "utility.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <vector>
 #include <queue>
 using namespace std;
-
-#ifdef __DEBUG__
-#define DEBUG_PRINT(fmt, args...)  \
-  fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, __LINE__, __FUNCTION__, ##args)
-#else /* Don't do anything in non-debug builds */
-#define DEBUG_PRINT(fmt, args...)
-#endif
-
 enum chessType{WHITE=2, BLACK=1, SPACE=0};
 enum line_type{ROW, COL};
 enum SOLVEMODE{HEURISTIC, DFS};
@@ -79,7 +73,7 @@ struct Board{
     isLimitInit = false;
     r = rr;  c = cc;
     lim_row = lr; lim_col = lc;
-    
+
     b.resize(r);
     for(int i = 0; i < r; i++)
       b[i].resize(c);
@@ -93,7 +87,7 @@ struct Board{
     for(int i = 0; i < r; i++)
       for(int j = 0; j < c; j++)
 	isupdate[i][j] = false;
-    
+
     solvedLineNum = 0;
     alreadySetGridNumber = 0;
     change_row.resize(r); change_col.resize(c);
@@ -148,10 +142,10 @@ struct Board{
   NonogramWriterInterface* writer;
 
   void solveGame();
-  
+
   void doHeuristic();
   bool doHeuristicByLine();
-  bool updateByHeuristic(line_type, int);  
+  bool updateByHeuristic(line_type, int);
   void updateRowLimits(struct Point p, int v);//fill a new block, find other block can be updated or not
   bool updateLimitByGrid_row(int linei, int limiti, int i);
   bool updateLimitByLimit_row(int nowr);
@@ -172,7 +166,7 @@ struct Board{
   bool in_limit_row(int linei, int limiti, int i);
   bool only_in_one_limit_col(int r, int c, int limiti);
   bool only_in_one_limit_row(int r, int c, int limiti);
-  
+
   //high-level functions related to limits
   void setRowLimitSolved(int ri, int limiti);
   void setColLimitSolved(int ri, int limiti);
@@ -180,10 +174,10 @@ struct Board{
   bool isAllSolved(){//TODO: ??? use another way to store information
     return (solvedLineNum == r + c);
   }
-  bool checkAnswer();//TODO: use getLimitFromBoard 
+  bool checkAnswer();//TODO: use getLimitFromBoard
   vector<int> getLimitFromBoard_col(int);
   vector<int> getLimitFromBoard_row(int);
-  
+
   void printBoard(const char[]);
   void saveResult();
   void saveSimpleResult(FILE *f);
