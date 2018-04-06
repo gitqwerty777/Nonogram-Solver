@@ -1,6 +1,7 @@
 CXX=g++
 
-ifeq ($(mode),debug) #if mode variable is empty, setting debug build mode
+#if variable mode is empty, setting release build mode
+ifeq ($(mode),debug)
 	mode=debug
 	CXXFLAGS=-g -pg -fno-omit-frame-pointer -O3
 	CXXFLAGS+=-D__DEBUG__ # define __DEBUG__
@@ -18,24 +19,24 @@ information:
 main: heu
 heu: nonoheu.o dfsboard.o board.o
 	$(CXX) $(CXXFLAGS) nonoheu.o board.o dfsboard.o -o heu; find . | grep ".*\.\(c\|h\|cpp\)" | xargs etags -f TAGS # generate emacs tags
-test: heu
-	sh runtest.sh # if not passed the test, return error
 
-test100: heu
-	./heu -t -n 100 -s 15 < 15question.txt > trash15mul200
-
-test200: heu
-	./heu -t -n 200 -s 15 < 15question.txt > trash15mul200
-
+test: main
+	bash runtest.sh # if not passed the test, return error
+# testN: 15x15 questions
+test100: main
+	./heu -t -n 100 -s 15 < 15question.txt > output15-100problems
+test200: main
+	./heu -t -n 200 -s 15 < 15question.txt > output15-200problems
 # 18.86 seconds in 2017/10/25
-test290: heu
-	./heu -t -n 290 -s 15 < 15question.txt > trash15mul200
-
-test25: heu
+test290: main
+	./heu -t -n 290 -s 15 < 15question.txt > output15-290problems
+test1000: main
+	./heu -t -n 1000 -s 15 < 15question.txt > output15-1000problems
+test15x15: main
+	./heu -t -s 15 < testdata/tour15
+# 25x25
+tour: main
 	./heu -t -s 25 < testdata/tourament1 > test25
-
-t1000: heu
-	./heu -t -s 15 < testdata/tour15 
 
 nonoheu.o: nonoheu.cpp dfsboard.h board.h nonogramReader.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c
@@ -45,4 +46,4 @@ dfsboard.o: dfsboard.cpp dfsboard.h board.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) dfsboard.cpp -c
 
 clean:
-	rm -rf *.o
+	rm -f ./heu; rm -rf *.o
