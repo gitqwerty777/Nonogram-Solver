@@ -3,8 +3,8 @@ C++ program to solve nonogram by heuristic and DFS
 
 ## Build
 
-1. `make mode=release` can build program `heu`
-2. `make mode=debug` will make program print detail message on each step(default mode)
+1. `make mode=release` can build program `heu`(default mode)
+2. `make mode=debug` will make program print detail message on each step
 
 ## Input Format
 
@@ -14,9 +14,9 @@ normal mode
 - line r+2 ~ r+c+1: column constraints with space seperated
 - if no constraint in a line, just put "0"
 
-There are some example test input files in `testdata/input[num]`
+There are some example test input files in `testdata/input*`
 
-tourment mode
+tourment mode: used for TCGA or TAAI nonogram input, multiple questions in one file
 - line 1: `$[problem index]` (index start from 1)
 - line 2 ~ boardSize+1: row constraints with `\t` seperated
 - line boardSize+2 ~ boardSize*2+1: column constraints with `\t` seperated
@@ -30,14 +30,14 @@ output answer with number format(1 = black, -1 = white, 0 = space) and graph for
 
 ## Run Program
 
-tourment mode(always square, a.k.a, row = column)
-```bash
-./heu -t -s [BoardSize] -n [problem num] < inputfile
-```
-
-normal mode(boardsize is decided in input)
+normal mode(boardsize is decided by first line of input)
 ```bash
 ./heu -f [result file path] < inputfile
+```
+
+tourment mode(always square, a.k.a, row = column)
+```bash
+./heu -t -s [BoardSize] -n [problemNum] < inputfile
 ```
 
 ## Algorithm
@@ -53,10 +53,10 @@ normal mode(boardsize is decided in input)
 
 - Heuristic
   - update left-most and right-most possible grid of each constraint
-    - first consider the line which changed the most
+    - consider the line which changed the most first
 - DFS
-  - fill the row with minimum possible choices
-  - also fill other grids by heuristic as many as possible to decrease further searching time
+  - fill the row or column with minimum possible variations
+  - also fill other grids by heuristic as many as possible to decrease further searching space
 
 ## Future Improvement
 

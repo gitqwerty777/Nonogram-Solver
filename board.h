@@ -153,8 +153,6 @@ struct Board{
   bool updateLimitByGrid_col(int linei, int limiti, int i);//update possibility of solutions(fs and ls)
   bool updateLimitByLimit_col(int nowc);
   //fill grids based on limit
-  void initialFillRow(int i);
-  void initialFillCol(int i);
     void initialFill(line_type lt, std::vector<Limit>& l, int lineIndex);
   void fillRowByLimit(int);
   void fillColByLimit(int);
@@ -193,6 +191,7 @@ struct Board{
   void doDFS();
 
   void setLimit(line_type t, int linei, Limit &l, int fs, int ls);
+    void fillByLimit(line_type lt, std::vector<Limit>& lim, int nowi);
     bool checkColor(line_type lt, int nowi, int i, int color);
 };
 

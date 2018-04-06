@@ -7,18 +7,16 @@ do
     ../heu -f test$i < input$i > out
     diff test$i.out input$i.out > compare
     if [[ -s compare ]] ; then
-	echo "test input$i wrong"
+	      echo "[test] input$i wrong"
     else
-	echo "test input$i correct"
-	((correctnum += 1))
+	      echo "[test] input$i correct"
+	      ((correctnum += 1))
     fi;
 done
 
 if [[ $correctnum -eq $totalnum ]] ; then
-    echo "all test passed!"
+    echo "[test] all test passed!"
 else
-    echo "NOT all test passed!"
+    echo "[test] NOT all test passed!"
     exit 1
 fi;
-    
-    
