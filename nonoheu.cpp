@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <vector>
 #include <string.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -10,8 +9,7 @@
 #include "nonogramReader.h"
 #include "nonogramWriter.h"
 
-using namespace std;
-
+//default options
 char *problemName = NULL;
 int problemNum = 1;
 int boardSize = 25;
@@ -26,7 +24,7 @@ void parseArgument(int argc, char** argv){
     if (cmd_opt == -1) {//End condition
       break;
     } else if (cmd_opt != '?') {//Print option when it is valid
-      fprintf(stderr, "option:-%c\n", cmd_opt);
+      fprintf(stderr, "get option:-%c\n", cmd_opt);
     }
     switch (cmd_opt) { /// Error handle: Mainly missing arg or illegal option
     case 't':
@@ -36,34 +34,36 @@ void parseArgument(int argc, char** argv){
     case 'n':
       if(optarg){
         sscanf(optarg, "%d", &problemNum);
-        fprintf(stderr, "-n with value %d\n", problemNum);
+        fprintf(stderr, "[OPTION] problem num %d\n", problemNum);
       } else {
-	fprintf(stderr, "-n without argument\n");
+        fprintf(stderr, "[OPTION] -n without argument\n");
+        exit(1);
       }
       break;
     case 's':
       if(optarg){
-	sscanf(optarg, "%d", &boardSize);
-        fprintf(stderr, "-s with value %d\n", boardSize);
+        sscanf(optarg, "%d", &boardSize);
+        fprintf(stderr, "[OPTION] board size %d\n", boardSize);
       } else {
-	fprintf(stderr, "-s without argument\n");
+        fprintf(stderr, "[OPTION] -s without argument\n");
       }
       break;
     case 'f':
       if (optarg){
-        problemName = new char(100);
-        fprintf(stderr, "f option %s\n", optarg);
-	int i = sprintf(problemName, "%s", optarg);
-	fprintf(stderr, "save output in path %s \n", problemName);
+        problemName = new char[1000];
+        int i = sprintf(problemName, "%s", optarg);
+        fprintf(stderr, "[OPTION] output file path %s\n", problemName);
       } else {
-	fprintf(stderr, "-f no argument\n");
+        fprintf(stderr, "[OPTION] -f no argument\n");
       }
       break;
     case '?':
       fprintf(stderr, "Illegal option\n");
+      exit(1);
       break;
     default:
-      fprintf(stderr, "Not supported option\n");
+      fprintf(stderr, "Not supported option %s\n", optarg);
+      exit(1);
       break;
     }
   }
@@ -108,7 +108,7 @@ int main(int argc, char** argv){
     clock_t end_t = clock();
     printf("time spent: %lf\n", (double(end_t) - double(start_t)) / CLOCKS_PER_SEC);
   }
-    clock_t endTime = clock();
+  clock_t endTime = clock();
 
   printf("time spent: %lf\n", (double(endTime) - double(beginTime)) / CLOCKS_PER_SEC);
   return 0;

@@ -20,8 +20,9 @@ main: heu
 heu: nonoheu.o dfsboard.o board.o
 	$(CXX) $(CXXFLAGS) nonoheu.o board.o dfsboard.o -o heu; find . | grep ".*\.\(c\|h\|cpp\)" | xargs etags -f TAGS # generate emacs tags
 
+# simple test, including question which has no solution
 test: main
-	bash runtest.sh # if not passed the test, return error
+	bash runtest.sh
 # testN: 15x15 questions
 test100: main
 	./heu -t -n 100 -s 15 < 15question.txt > output15-100problems
