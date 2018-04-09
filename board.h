@@ -64,9 +64,9 @@ typedef LineChanged change;
 class NonogramWriterInterface;
 
 struct Board{
-  Board(){tryFailedReason = new char[200];}
+  Board(){conflictReason = new char[200];}
   Board(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
-    tryFailedReason = new char[200];
+    conflictReason = new char[200];
     init(rr, cc, lr, lc, n, problemNum);
   }
   void init(int rr, int cc, vector< vector<struct Limit> > lr, vector< vector<struct Limit> > lc, char* n = NULL, int problemNum = 1){
@@ -113,6 +113,7 @@ struct Board{
     else
       name = n;
     this->problemNum = problemNum;
+    conflict = false;
   }
 
   void setWriter(NonogramWriterInterface* writer){
@@ -135,11 +136,15 @@ struct Board{
   vector<bool> changed_row, changed_col;
 
   SOLVEMODE solveMode;
-  bool tryFailed;
-  char* tryFailedReason;
+  bool conflict;
+  char* conflictReason;
   int solvedLineNum;
   int alreadySetGridNumber;
   NonogramWriterInterface* writer;
+
+    bool isAllSolved(){//TODO: ??? use another way to store information
+        return (solvedLineNum == r + c);
+    }
 
   void solveGame();
 
@@ -173,9 +178,7 @@ struct Board{
   void setColLimitSolved(int ri, int limiti);
     void setLimitSolved(line_type lt, std::vector<Limit>& lim, int linei, int limiti);
   void isLineSolved(line_type type, int line);
-  bool isAllSolved(){//TODO: ??? use another way to store information
-    return (solvedLineNum == r + c);
-  }
+
   bool checkAnswer();//TODO: use getLimitFromBoard
   vector<int> getLimitFromBoard_col(int);
   vector<int> getLimitFromBoard_row(int);

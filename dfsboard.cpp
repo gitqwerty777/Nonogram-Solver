@@ -139,7 +139,7 @@ bool DFSBoard::tryFillRowWithHeuristic(Line& nowLine){
   LimitFiller& filler = limitFillers[nowLine.index];
   if(!filler.getNextFillStart())
     return false;
-  
+
   bool isSuccess = false;
   Backup(nowLine);
   do{
@@ -149,11 +149,11 @@ bool DFSBoard::tryFillRowWithHeuristic(Line& nowLine){
       Restore(nowLine);
     }
   } while(!isSuccess && filler.getNextFillStart());
-  
+
   return isSuccess;
 }
 bool DFSBoard::tryFillRowbyFillStartHeuristic(const Line& nowLine, const vector<int>& fillStart){
-  tryFailed = false;
+  conflict = false;
 
   /* fill row */
   if(nowLine.t == ROW){
@@ -175,13 +175,13 @@ bool DFSBoard::tryFillRowbyFillStartHeuristic(const Line& nowLine, const vector<
       if(b[i][nowc] == SPACE)
 	fillGrid(i, nowc, WHITE);
   }
-  
+
   /* try heuristic */
-  while(!isAllSolved() && !tryFailed)
+  while(!isAllSolved() && !conflict)
     if(!doHeuristicByLine())
       break;
-  if(tryFailed){//find contradiction when updating heuristic, restore
-    DEBUG_PRINT("try fill: failed [%s], restore %d\n", tryFailedReason, nowLine.i);
+  if(conflict){//find contradiction when updating heuristic, restore
+    DEBUG_PRINT("try fill: failed [%s], restore %d\n", conflictReason, nowLine.i);
     return false;
   }
 

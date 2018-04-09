@@ -52,7 +52,7 @@ void parseArgument(int argc, char** argv){
       if (optarg){
         problemName = new char[1000];
         int i = sprintf(problemName, "%s", optarg);
-        fprintf(stderr, "[OPTION] output file path %s\n", problemName);
+        fprintf(stderr, "[OPTION] output file name: %s.out\n", problemName);
       } else {
         fprintf(stderr, "[OPTION] -f no argument\n");
       }
@@ -95,21 +95,21 @@ int main(int argc, char** argv){
   clock_t beginTime = clock();
   for(int i = 0; i < problemNum; i++){
     clock_t start_t = clock();
-    fprintf(stderr, "To solve problem %d\n", i);
+    fprintf(stderr, "Solving problem %d\n", i);
     ir.readInputAndGetBoard(&board, problemName, isTourament);
+    //solve
     board.doHeuristic();
     board.doDFS();
     if(!board.checkAnswer())
-      fprintf(stderr, "check answer failed\n");
+      fprintf(stderr, "recheck answer failed\n");
     else
-      fprintf(stderr, "%d correct\n", i);
+      fprintf(stderr, "%d recheck correct\n", i);
     board.printBoard("after solved");
     board.saveResult();
     clock_t end_t = clock();
     printf("time spent: %lf\n", (double(end_t) - double(start_t)) / CLOCKS_PER_SEC);
   }
   clock_t endTime = clock();
-
-  printf("time spent: %lf\n", (double(endTime) - double(beginTime)) / CLOCKS_PER_SEC);
+  printf("total time spent: %lf\n", (double(endTime) - double(beginTime)) / CLOCKS_PER_SEC);
   return 0;
 }

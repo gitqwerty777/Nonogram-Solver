@@ -10,8 +10,6 @@
 #include <locale.h>
 #define INF 2147483647
 
-using namespace std;
-
 /// @brief use heuristic to solve in the beginning
 void Board::doHeuristic(){
   solveMode = HEURISTIC;
@@ -22,21 +20,30 @@ void Board::doHeuristic(){
   for(int i = 0; i < c; i++)
     initialFill(COL, lim_col[i], i);
   printBoard("after fill col and row");
-  isLimitInit = true;
+  isLimitInit = true;//used to update after fillgrid, TODO: delete to test
 
   while(!isAllSolved()){//do heuristic after no limit and grid to update
     if(!doHeuristicByLine()){
       break;
     }
-    printf("doHeuristicByLine 2????\n");
+    fprintf(stderr, "do heuristic by line  twice!!\n");
+    printBoard("do heuristic by line use twice!!");
+
+    fprintf(stderr, "change row:\n");
+    for(int i = 0; i < c; i++){
+      fprintf(stderr, "%d ", change_row[i]);
+    }
+    for(int i = 0; i < r; i++){
+      fprintf(stderr, "%d ", change_col[i]);
+    }
   }
 }
 
 void Board::initialFill(line_type lt, std::vector<Limit>& l, int lineIndex){
-  int remain = (lt==ROW)?c:r;
+  int remain = (lt==ROW)?c:r;//one row has c elements, one column has r elements
   for(int i = 0; i < l.size(); i++)
-    remain -= l[i].l;//blacks
-  remain -= l.size() - 1;//whites
+    remain -= l[i].l;
+  remain -= l.size() - 1;
   if(remain == 0){//can fill all
     int nowi = 0;
     for(size_t i = 0; i < l.size(); i++){
@@ -60,7 +67,7 @@ void Board::initialFill(line_type lt, std::vector<Limit>& l, int lineIndex){
         fillGrid(lt, j, lineIndex, BLACK);
       }
       l[i].set_pos(fs, ls);
-      fs = fe + 2;//next limit
+      fs = fe + 2;//next limit, should have a white to seperate
       for(int j = le+1; j < fs; j++)
         fillGrid(lt, j, lineIndex, WHITE);
     }
@@ -84,8 +91,7 @@ void Board::setRowLimitSolved(int linei, int limiti){
 
 ///@brief select and solve one line by heuristics
 bool Board::doHeuristicByLine(){//TODO:Optimize
-  tryFailed = false; // TODO: why this is needed...
-  priority_queue<change, vector<change>, change> changeQueue;
+  std::priority_queue<change, std::vector<change>, change> changeQueue;
   //initial: push unsolved row and col
   for(int i = 0;i < r; i++)
     if(!solved_row[i])
@@ -94,12 +100,12 @@ bool Board::doHeuristicByLine(){//TODO:Optimize
     if(!solved_col[i])
       changeQueue.push(change(COL, i, change_col[i]));
 
-  bool isChange = false;
+  bool isUpdated = false;
   int previousChangeNum = 0;
   int previousSetGrid = alreadySetGridNumber;
   int maxChangeNum = changeQueue.top().changeNum;
   while(!changeQueue.empty()){
-    change ch = changeQueue.top();//choose the line that change the most
+    change ch = changeQueue.top();//choose the line that update the most grids
     changeQueue.pop();
     int *changeNum;
     if(ch.type == ROW)
@@ -108,29 +114,27 @@ bool Board::doHeuristicByLine(){//TODO:Optimize
       changeNum = &change_col[ch.lineNum];
     *changeNum = 0; //reset change num of the best line
     DEBUG_PRINT("update %s %d\n", (ch.type==ROW)?"ROW":"COL", ch.lineNum);
-    isChange = updateByHeuristic(ch.type, ch.lineNum);
-    if(tryFailed){//limit conflict, no answer
+    isUpdated = updateByHeuristic(ch.type, ch.lineNum);
+    if(conflict){//limit conflict, no answer
       return false;
     }
     if(*changeNum != 0)//if not solve this line yet, push it back
       changeQueue.push(change(ch.type, ch.lineNum, *changeNum));
   }
-  if(!isChange && maxChangeNum == 0){
+  if(isUpdated || maxChangeNum != 0){
+    return true;
+  } else {//nothing can be updated
     if(solveMode == HEURISTIC){
       DEBUG_PRINT("NO HEURISTIC ANSWER\n");
       printf("no heursitic answer\n");
-      return false;
     }
-    else{
-      //finish heursitic
-      return false;
-    }
-  } else {
-    return true;
+    //if it's not heuristic mode, it's in DFS, directly finish heursitic
+    return false;
   }
 }
 
 ///@brief main method to do heuristic instructions
+/// line type = row or col
 ///@TODO: improve process
 bool Board::updateByHeuristic(line_type type, int line){
   int originalSetnum = alreadySetGridNumber;
@@ -165,8 +169,8 @@ inline void Board::no_solution(const char in[]){
     saveAndExit(1);
   } else if(solveMode == DFS) {
     DEBUG_PRINT("no solution: %s\n", in);
-    sprintf(tryFailedReason, "%s\n", in);
-    tryFailed = true;
+    sprintf(conflictReason, "%s\n", in);
+    conflict = true;
   }
 }
 inline void Board::no_solution(const char in[], line_type t, int i){//check answer failed
@@ -175,8 +179,8 @@ inline void Board::no_solution(const char in[], line_type t, int i){//check answ
     saveAndExit(5);
   } else if (solveMode == DFS) {
     DEBUG_PRINT("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
-    sprintf(tryFailedReason, "%s", in);
-    tryFailed = true;
+    sprintf(conflictReason, "%s", in);
+    conflict = true;
   }
 }
 
@@ -444,9 +448,9 @@ bool Board::updateLimitByGrid_row(int linei, int limiti, int i){
       ls--;
   }
   if(fs > ls){
-    //sprintf(tryFailedReason, "fs > ls at row %d limit %d fs %d ls %d, update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, limiti, fs, ls, linei, seqs, seqe, fs, ls);
-    sprintf(tryFailedReason, "fs > ls at row %d\n", linei);
-    no_solution(tryFailedReason);
+    //sprintf(conflictReason, "fs > ls at row %d limit %d fs %d ls %d, update black grid sequence(%d, %d~%d): limit=(%d, %d)\n", linei, limiti, fs, ls, linei, seqs, seqe, fs, ls);
+    sprintf(conflictReason, "fs > ls at row %d\n", linei);
+    no_solution(conflictReason);
     return false;
   }
   //complete, fill the information back
@@ -508,9 +512,9 @@ bool Board::updateLimitByGrid_col(int linei, int limiti, int nowr){//update fs, 
       ls--;
   }
   if(fs > ls){
-    sprintf(tryFailedReason, "%d col %dth limit (%d, %d) -> fs %d > ls %d\n", linei, limiti, lim_col[linei][limiti].fs, lim_col[linei][limiti].fs, fs, ls);
-    DEBUG_PRINT(tryFailedReason);
-    no_solution(tryFailedReason);
+    sprintf(conflictReason, "%d col %dth limit (%d, %d) -> fs %d > ls %d\n", linei, limiti, lim_col[linei][limiti].fs, lim_col[linei][limiti].fs, fs, ls);
+    //DEBUG_PRINT(conflictReason);
+    no_solution(conflictReason);
     return false;
   }
   /*if(lim_col[linei][limiti].fs != fs || lim_col[linei][limiti].ls != ls){
@@ -576,8 +580,8 @@ void Board::setLimit(line_type t, int linei, Limit &l, int fs, int ls){
 void Board::fillGrid(int r, int c, int v){
   //commented because it cannot happen
   /*if(r < 0 || c < 0 || r >= this->r || c >= this->c){
-    sprintf(tryFailedReason, "fillgrid out of range");
-    no_solution(tryFailedReason);
+    sprintf(conflictReason, "fillgrid out of range");
+    no_solution(conflictReason);
     return;
     }*/
   if(b[r][c] == SPACE){
@@ -598,8 +602,8 @@ void Board::fillGrid(int r, int c, int v){
       isupdate[r][c] = true;
     }
   } else if(b[r][c] != v){
-    sprintf(tryFailedReason, "illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
-    no_solution(tryFailedReason);
+    sprintf(conflictReason, "illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
+    no_solution(conflictReason);
   }
 }
 void Board::fillGrid(line_type lt, int second, int first, int v){
@@ -613,8 +617,8 @@ void Board::fillGrid(line_type lt, int second, int first, int v){
   }
   //commented because it cannot happen
   /*if(r < 0 || c < 0 || r >= this->r || c >= this->c){
-    sprintf(tryFailedReason, "fillgrid out of range");
-    no_solution(tryFailedReason);
+    sprintf(conflictReason, "fillgrid out of range");
+    no_solution(conflictReason);
     return;
     }*/
   if(b[r][c] == SPACE){
@@ -635,8 +639,8 @@ void Board::fillGrid(line_type lt, int second, int first, int v){
       isupdate[r][c] = true;
     }
   } else if(b[r][c] != v){
-    sprintf(tryFailedReason, "illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
-    no_solution(tryFailedReason);
+    sprintf(conflictReason, "illegal fillGrid(%d, %d) from %d to %d\n", r, c, b[r][c], v);
+    no_solution(conflictReason);
   }
 }
 
@@ -684,8 +688,8 @@ void Board::isLineSolved(line_type type, int line){  //check whole line is solve
   }
 }
 
-vector<int> Board::getLimitFromBoard_row(int nowr){
-  vector<int> limit;
+std::vector<int> Board::getLimitFromBoard_row(int nowr){
+  std::vector<int> limit;
   for(int i = 0; i < c; i++){
     if(b[nowr][i] == BLACK){
       int count = 0;
@@ -697,8 +701,8 @@ vector<int> Board::getLimitFromBoard_row(int nowr){
   }
   return limit;
 }
-vector<int> Board::getLimitFromBoard_col(int nowc){
-  vector<int> limit;
+std::vector<int> Board::getLimitFromBoard_col(int nowc){
+  std::vector<int> limit;
   for(int i = 0; i < r; i++){
     if(b[i][nowc] == BLACK){
       int count = 0;
@@ -714,8 +718,8 @@ vector<int> Board::getLimitFromBoard_col(int nowc){
 wchar_t boardchar[3][20] = {L" ", L"\u25A0", L"\u25A1"};//space black white
 wchar_t cl[] = L"\n";
 void Board::printBoard(const char in[]){
-  return;
-  printf("print board: %s\n", in);
+#ifdef __DEBUG__
+  fprintf(stderr,"print board: %s\n", in);
   int maxlr = 0;
   for(int i = 0; i < r; i++)
     if(maxlr < lim_row[i].size())
@@ -769,6 +773,9 @@ void Board::printBoard(const char in[]){
       printf("(%d, %d)", lim_col[i][j].fs, lim_col[i][j].ls);
     }
   }
+#else
+  //fprintf(stderr, "no printboard() in release mode!\n");
+#endif
 }
 
 void Board::saveResult(){//the same as start of printBoard
@@ -846,7 +853,7 @@ void Board::saveFullResult(){
 }
 
 bool Board::checkAnswer(){
-  vector<int> seq;
+  std::vector<int> seq;
   for(int i = 0; i < r; i++){
     seq.clear();
     for(int j = 0; j < c; j++){

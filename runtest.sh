@@ -5,7 +5,7 @@ cd testdata
 for ((i = 1; i <= 8; i++))
 do
     ../heu -f test$i < input$i > out
-    diff test$i.out input$i.out > compare
+   diff test$i.out input$i.out > compare
     if [[ -s compare ]] ; then
 	      echo "[test] input$i wrong"
         cat compare

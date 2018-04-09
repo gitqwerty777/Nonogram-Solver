@@ -33,11 +33,12 @@ test290: main
 	./heu -t -n 290 -s 15 < 15question.txt > output15-290problems
 test1000: main
 	./heu -t -n 1000 -s 15 < 15question.txt > output15-1000problems
+# an hard problem in 15x15 board, 15 seconds in 2018/04/07
 test15x15: main
 	./heu -t -s 15 < testdata/tour15
-# 25x25
-tour: main
-	./heu -t -s 25 < testdata/tourament1 > test25
+# an easy problem in 25x25 board, run very slow
+test25x25: main
+	./heu -t -s 25 < testdata/tourament1 > output25x25
 
 nonoheu.o: nonoheu.cpp dfsboard.h board.h nonogramReader.h nonogramWriter.h
 	$(CXX) $(CXXFLAGS) nonoheu.cpp -c
