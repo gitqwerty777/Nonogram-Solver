@@ -3,8 +3,10 @@ C++ program to solve nonogram by heuristic and DFS
 
 ## Build
 
-1. `make mode=release` can build program `heu`(default mode)
-2. `make mode=debug` will make program print detail message on each step
+build program `heu`
+
+1. `make mode=release`: (default mode)
+2. `make mode=debug`: problem will print detail messages on each step
 
 ## Input Format
 
@@ -26,13 +28,15 @@ There are some example test input files `testdata/question.txt`
 
 ## Output Format
 
-output answer with number format(1 = black, -1 = white, 0 = space) and graph format(unicode black and white blocks)
+After solved, answer will be outputted by number format(1 = black, -1 = white, 0 = space) and graph format(unicode black and white blocks).
+
+There is no simple output(like input) yet.
 
 ## Run Program
 
 normal mode(boardsize is decided by first line of input)
 ```bash
-./heu -f [result file path] < inputfile
+./heu -f [result file name] < inputfile
 ```
 
 tourment mode(always square, a.k.a, row = column)
@@ -45,7 +49,7 @@ tourment mode(always square, a.k.a, row = column)
 - Heuristic
   - Refer to techniques in [wiki](https://en.wikipedia.org/wiki/Nonogram#Solution_techniques)
 - DFS
-  - fill a line in each step
+  - Fill a line constraint in one step, if found conflict constraints, backtrack
 - Hybrid
   - Use heuristic method first, if it isn't solved, do DFS
 
@@ -55,8 +59,8 @@ tourment mode(always square, a.k.a, row = column)
   - update left-most and right-most possible grid of each constraint
     - consider the line which changed the most first
 - DFS
-  - fill the row or column with minimum possible variations
-  - also fill other grids by heuristic as many as possible to decrease further searching space
+  - fill the row or column which has minimum possible variations(the smallest branching factor)
+  - also apply heuristic as many as possible to decrease further searching space
 
 ## Future Improvement
 
@@ -65,3 +69,7 @@ tourment mode(always square, a.k.a, row = column)
 1. DFS
   1. also consider to fill column at each step
     1. is it better to fill only some grids instead of line at each step?
+
+## Related Research
+
+NCTU
