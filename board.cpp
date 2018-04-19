@@ -164,7 +164,7 @@ bool Board::updateByHeuristic(line_type type, int line){
 
 inline void Board::no_solution(const char in[]){
   if(solveMode == HEURISTIC){
-    printf("no solution: %s\n", in);
+    fprintf(stderr, "no solution: %s\n", in);
     printBoard("no solution");
     saveAndExit(1);
   } else if(solveMode == DFS) {
