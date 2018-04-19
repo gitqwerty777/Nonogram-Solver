@@ -95,15 +95,15 @@ bool Board::doHeuristicByLine(){//TODO:Optimize
   //initial: push unsolved row and col
   for(int i = 0;i < r; i++)
     if(!solved_row[i])
-      changeQueue.push(change(ROW, i, change_row[i]));
+      changeQueue.push(change(ROW, i, &change_row[i]));
   for(int i = 0; i < c; i++)
     if(!solved_col[i])
-      changeQueue.push(change(COL, i, change_col[i]));
+      changeQueue.push(change(COL, i, &change_col[i]));
 
-  bool isUpdated = false;
+  bool isChanged = false;
   int previousChangeNum = 0;
   int previousSetGrid = alreadySetGridNumber;
-  int maxChangeNum = changeQueue.top().changeNum;
+  int maxChangeNum = *(changeQueue.top().changeNum);
   while(!changeQueue.empty()){
     change ch = changeQueue.top();//choose the line that update the most grids
     changeQueue.pop();
@@ -114,14 +114,14 @@ bool Board::doHeuristicByLine(){//TODO:Optimize
       changeNum = &change_col[ch.lineNum];
     *changeNum = 0; //reset change num of the best line
     DEBUG_PRINT("update %s %d\n", (ch.type==ROW)?"ROW":"COL", ch.lineNum);
-    isUpdated = updateByHeuristic(ch.type, ch.lineNum);
+    isChanged = updateByHeuristic(ch.type, ch.lineNum);
     if(conflict){//limit conflict, no answer
       return false;
     }
     if(*changeNum != 0)//if not solve this line yet, push it back
-      changeQueue.push(change(ch.type, ch.lineNum, *changeNum));
+      changeQueue.push(change(ch.type, ch.lineNum, changeNum));
   }
-  if(isUpdated || maxChangeNum != 0){
+  if(isChanged || maxChangeNum != 0){
     return true;
   } else {//nothing can be updated
     if(solveMode == HEURISTIC){
@@ -166,6 +166,7 @@ inline void Board::no_solution(const char in[]){
   if(solveMode == HEURISTIC){
     fprintf(stderr, "no solution: %s\n", in);
     printBoard("no solution");
+    clearBoard();
     saveAndExit(1);
   } else if(solveMode == DFS) {
     DEBUG_PRINT("no solution: %s\n", in);
@@ -173,9 +174,16 @@ inline void Board::no_solution(const char in[]){
     conflict = true;
   }
 }
+void Board::clearBoard(){
+  for(int i = 0; i < r; i++)
+    for(int j = 0; j < c; j++){
+      b[i][j] = SPACE;
+    }
+}
 inline void Board::no_solution(const char in[], line_type t, int i){//check answer failed
   if(solveMode == HEURISTIC){
     printf("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);
+    clearBoard();
     saveAndExit(5);
   } else if (solveMode == DFS) {
     DEBUG_PRINT("wrong solution: %s %s%d\n", in, (t==ROW)?"ROW":"COL", i);

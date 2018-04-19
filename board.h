@@ -47,15 +47,12 @@ class LineChanged{//TODO:
  public:
   line_type type;
   int lineNum;
-  int changeNum;
+  int* changeNum;
   LineChanged(){}
-  LineChanged(line_type t, int i, int cn){
-    type = t;
-    lineNum = i;
-    changeNum = cn;
+LineChanged(line_type t, int i, int* cn): type(t), lineNum(i), changeNum(cn){
   }
   bool operator()(const LineChanged& lc, const LineChanged& rc) const {
-    return (lc.changeNum < rc.changeNum);
+      return (*(lc.changeNum) < *(rc.changeNum));
   }
 };
 
@@ -79,7 +76,7 @@ struct Board{
       b[i].resize(c);
     for(int i = 0; i < r; i++)
       for(int j = 0; j < c; j++)
-	b[i][j] = SPACE;
+          b[i][j] = SPACE;
 
     isupdate.resize(r);
     for(int i = 0; i < r; i++)
@@ -196,6 +193,8 @@ struct Board{
   void setLimit(line_type t, int linei, Limit &l, int fs, int ls);
     void fillByLimit(line_type lt, std::vector<Limit>& lim, int nowi);
     bool checkColor(line_type lt, int nowi, int i, int color);
+
+    void clearBoard();
 };
 
 

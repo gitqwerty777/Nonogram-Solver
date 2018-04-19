@@ -1,6 +1,7 @@
 schedule 10/15~11/21
 
-
+change system message from stdout to stderr
+no solution: output nothing
 
 * 6. After TAAI
 ** 交大論文1: An efficient algorithm for solving nonograms
@@ -24,7 +25,7 @@ CLOSED: [2015-10-20 二 19:54]
 *** ONGOING if there's wrong problem, record and analyze 11/5
 ** TODO test speed
 *** ONGOING calculate worse case and record it 11/5
-* 3. optimization 
+* 3. optimization
 ** ONGOING refact 10/15~10/30(simple), 11/5~11/21(combine 2., 3.)
 *** DONE O3 warnings
 CLOSED: [2015-10-25 日 11:49]
