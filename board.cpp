@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <cassert>
+#include <algorithm>
 #include <locale.h>
 #define INF 2147483647
 
@@ -33,9 +34,12 @@ void Board::doHeuristic(){
     for(int i = 0; i < c; i++){
       fprintf(stderr, "%d ", change_row[i]);
     }
+    fprintf(stderr, "\n");
+    fprintf(stderr, "change col:\n");
     for(int i = 0; i < r; i++){
       fprintf(stderr, "%d ", change_col[i]);
     }
+    fprintf(stderr, "\n");
   }
 }
 
@@ -191,7 +195,6 @@ inline void Board::no_solution(const char in[], line_type t, int i){//check answ
     conflict = true;
   }
 }
-
 
 void Board::fillRowByLimit(int nowr){
   DEBUG_PRINT("fillrowbylimit%d\n", nowr);

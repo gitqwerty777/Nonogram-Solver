@@ -4,6 +4,7 @@ cd testdata
 
 for ((i = 1; i <= 8; i++))
 do
+    rm -f test$1.out
     ../heu -f test$i < input$i > out
    diff test$i.out input$i.out > compare
     if [[ -s compare ]] ; then

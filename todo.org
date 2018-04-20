@@ -1,7 +1,8 @@
 schedule 10/15~11/21
+* temp
+** change system message from stdout to stderr
+** "do heuristic by line twice"
 
-change system message from stdout to stderr
-no solution: output nothing
 
 * 6. After TAAI
 ** 交大論文1: An efficient algorithm for solving nonograms

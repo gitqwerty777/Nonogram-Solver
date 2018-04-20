@@ -1,9 +1,16 @@
 #pragma once
 
+#include <cstdio>
+
 #define saveAndExit(errorcode) {                \
         saveResult();                           \
         exit(errorcode);                        \
     }
+
+
+template <typename... Args> inline void epr(const char *s, Args... args) {
+    fprintf(stderr, s, args...);
+}
 
 #ifdef __DEBUG__
 #define DEBUG_PRINT(fmt, args...)                                       \
