@@ -95,42 +95,54 @@ void Board::setRowLimitSolved(int linei, int limiti){
 
 ///@brief select and solve one line by heuristics
 bool Board::doHeuristicByLine(){//TODO:Optimize
-  std::priority_queue<change, std::vector<change>, change> changeQueue;
+  //TODO:remove change queue
+  std::vector<change> changeQueue;
+  changeQueue.clear();
   //initial: push unsolved row and col
   for(int i = 0;i < r; i++)
     if(!solved_row[i])
-      changeQueue.push(change(ROW, i, &change_row[i]));
+      changeQueue.push_back(change(ROW, i, (&change_row[i])));
   for(int i = 0; i < c; i++)
     if(!solved_col[i])
-      changeQueue.push(change(COL, i, &change_col[i]));
+      changeQueue.push_back(change(COL, i, (&change_col[i])));
 
   bool isChanged = false;
   int previousChangeNum = 0;
   int previousSetGrid = alreadySetGridNumber;
-  int maxChangeNum = *(changeQueue.top().changeNum);
-  while(!changeQueue.empty()){
-    change ch = changeQueue.top();//choose the line that update the most grids
-    changeQueue.pop();
-    int *changeNum;
-    if(ch.type == ROW)
-      changeNum = &change_row[ch.lineNum];
-    else
-      changeNum = &change_col[ch.lineNum];
-    *changeNum = 0; //reset change num of the best line
+  std::sort(changeQueue.begin(), changeQueue.end());
+  int maxChangeNum = *(changeQueue[0].changeNum);
+  while(changeQueue.size() != 0){
+    std::sort(changeQueue.begin(), changeQueue.end());
+    epr("change queue size %lu\n", changeQueue.size());
+    for(int i = 0; i < changeQueue.size(); i++){
+      changeQueue[i].print();
+    }
+    change& ch = changeQueue[0];//choose the line that update the most grids
+    if(ch.isTried)//all are tried
+      break;
+    ch.isTried = true;
+    //changeQueue.assign(changeQueue.begin()+1, changeQueue.end());
+    *ch.changeNum = 0; //reset change num of the best line
     DEBUG_PRINT("update %s %d\n", (ch.type==ROW)?"ROW":"COL", ch.lineNum);
     isChanged = updateByHeuristic(ch.type, ch.lineNum);
     if(conflict){//limit conflict, no answer
       return false;
     }
-    if(*changeNum != 0)//if not solve this line yet, push it back
-      changeQueue.push(change(ch.type, ch.lineNum, changeNum));
+    if((*ch.changeNum) != 0){//if not solve this line yet, push it back
+      epr("set all line change to false\n");
+      if(solveMode == HEURISTIC){
+        for(int i = 0; i < changeQueue.size(); i++){
+          changeQueue[i].isTried = false;
+        }
+      }
+    }
   }
   if(isChanged || maxChangeNum != 0){
     return true;
   } else {//nothing can be updated
     if(solveMode == HEURISTIC){
       DEBUG_PRINT("NO HEURISTIC ANSWER\n");
-      printf("no heursitic answer\n");
+      epr("no heursitic answer\n");
     }
     //if it's not heuristic mode, it's in DFS, directly finish heursitic
     return false;
