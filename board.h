@@ -51,14 +51,12 @@ class LineChanged{//TODO:
   bool isTried;
   LineChanged(){}
 LineChanged(line_type t, int i, int* cn): type(t), lineNum(i), changeNum(cn), isTried(false){
-      print();
+      //print();
   }
   void print(){
-      epr("line change: line %s, %d, change %d istried %s\n", type==ROW?"ROW":"COL", lineNum, *changeNum, isTried?"True":"False");
+      DEBUG_PRINT("line change: line %s, %d, change %d istried %s\n", type==ROW?"ROW":"COL", lineNum, *changeNum, isTried?"True":"False");
+
   }
-  //bool operator()(const LineChanged& lc, const LineChanged& rc) const {
-  //return (*(lc.changeNum) < *(rc.changeNum));
-  //}
   bool operator<(const LineChanged& rhs) const{
       if(isTried != rhs.isTried)
           return !isTried;

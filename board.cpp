@@ -23,24 +23,7 @@ void Board::doHeuristic(){
   printBoard("after fill col and row");
   isLimitInit = true;//used to update after fillgrid, TODO: delete to test
 
-  while(!isAllSolved()){//do heuristic after no limit and grid to update
-    if(!doHeuristicByLine()){
-      break;
-    }
-    fprintf(stderr, "do heuristic by line  twice!!\n");
-    printBoard("do heuristic by line use twice!!");
-
-    fprintf(stderr, "change row:\n");
-    for(int i = 0; i < c; i++){
-      fprintf(stderr, "%d ", change_row[i]);
-    }
-    fprintf(stderr, "\n");
-    fprintf(stderr, "change col:\n");
-    for(int i = 0; i < r; i++){
-      fprintf(stderr, "%d ", change_col[i]);
-    }
-    fprintf(stderr, "\n");
-  }
+  doHeuristicByLine();
 }
 
 void Board::initialFill(line_type lt, std::vector<Limit>& l, int lineIndex){
@@ -95,33 +78,30 @@ void Board::setRowLimitSolved(int linei, int limiti){
 
 ///@brief select and solve one line by heuristics
 bool Board::doHeuristicByLine(){//TODO:Optimize
-  //TODO:remove change queue
-  std::vector<change> changeQueue;
-  changeQueue.clear();
+  std::vector<change> changes;
+  changes.clear();
   //initial: push unsolved row and col
   for(int i = 0;i < r; i++)
     if(!solved_row[i])
-      changeQueue.push_back(change(ROW, i, (&change_row[i])));
+      changes.push_back(change(ROW, i, (&change_row[i])));
   for(int i = 0; i < c; i++)
     if(!solved_col[i])
-      changeQueue.push_back(change(COL, i, (&change_col[i])));
+      changes.push_back(change(COL, i, (&change_col[i])));
 
   bool isChanged = false;
   int previousChangeNum = 0;
   int previousSetGrid = alreadySetGridNumber;
-  std::sort(changeQueue.begin(), changeQueue.end());
-  int maxChangeNum = *(changeQueue[0].changeNum);
-  while(changeQueue.size() != 0){
-    std::sort(changeQueue.begin(), changeQueue.end());
-    epr("change queue size %lu\n", changeQueue.size());
-    for(int i = 0; i < changeQueue.size(); i++){
-      changeQueue[i].print();
+  std::sort(changes.begin(), changes.end());
+  int maxChangeNum = *(changes[0].changeNum);
+  while(changes.size() != 0){
+    std::sort(changes.begin(), changes.end());
+    for(int i = 0; i < changes.size(); i++){//cannot use range-based for because it will cause pointer assignemtn error in class LineChanged
+      changes[i].print();
     }
-    change& ch = changeQueue[0];//choose the line that update the most grids
+    change& ch = changes[0];//choose the line that update the most grids
     if(ch.isTried)//all are tried
       break;
     ch.isTried = true;
-    //changeQueue.assign(changeQueue.begin()+1, changeQueue.end());
     *ch.changeNum = 0; //reset change num of the best line
     DEBUG_PRINT("update %s %d\n", (ch.type==ROW)?"ROW":"COL", ch.lineNum);
     isChanged = updateByHeuristic(ch.type, ch.lineNum);
@@ -129,10 +109,10 @@ bool Board::doHeuristicByLine(){//TODO:Optimize
       return false;
     }
     if((*ch.changeNum) != 0){//if not solve this line yet, push it back
-      epr("set all line change to false\n");
+      DEBUG_PRINT("set all constraint search flags to false\n");
       if(solveMode == HEURISTIC){
-        for(int i = 0; i < changeQueue.size(); i++){
-          changeQueue[i].isTried = false;
+        for(int i = 0; i < changes.size(); i++){
+          changes[i].isTried = false;
         }
       }
     }

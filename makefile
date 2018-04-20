@@ -3,11 +3,11 @@ CXX=g++
 #if variable mode is empty, setting release build mode
 ifeq ($(mode),debug)
 	mode=debug
-	CXXFLAGS=-g -pg -fno-omit-frame-pointer -O3
+	CXXFLAGS=-std=c++11  -g -pg -fno-omit-frame-pointer -O3
 	CXXFLAGS+=-D__DEBUG__ # define __DEBUG__
 else
 	mode=release
-	CXXFLAGS=-O3 -march=native
+	CXXFLAGS=-std=c++11 -O3 -march=native
 endif
 
 all: information main
